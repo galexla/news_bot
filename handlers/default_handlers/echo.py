@@ -13,5 +13,5 @@ def bot_echo(message: Message) -> None:
     :rtype: None
     """
     bot.reply_to(
-        message, "Echo without state or filter.\n" f"Message: {message.text}"
+        message, 'Echo without state or filter.\n' f'Message: {message.text}'
     )

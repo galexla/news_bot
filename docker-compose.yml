@@ -1,0 +1,14 @@
+# version: "3.8"
+services:
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - /path/to/your/redis-data:/data
+    ports:
+      - "6379:6379"
+

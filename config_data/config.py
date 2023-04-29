@@ -7,10 +7,12 @@ else:
     load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-NEWS_API_KEY = os.getenv('NEWS_API_KEY')
-TEXT_ANALYSIS_API_KEY = os.getenv('TEXT_ANALYSIS_API_KEY')
+
+RAPID_API_KEY = os.getenv('RAPID_API_KEY')
+
 DEFAULT_COMMANDS = (
     ('start', 'Запустить бота'),
     ('help', 'Вывести справку'),
-    ('summary', 'Получить краткое содержание новостей за неделю')
+    ('summary', 'Получить краткое содержание новостей за неделю'),
+    ('news', 'Получить новости')
 )

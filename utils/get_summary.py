@@ -30,6 +30,8 @@ def _summary_api_request(text: str, percent: float) -> Optional[dict]:
     :type text: str
     :param percent: size of the summary
     :type percent: float
+    :raise requests.RequestException: raised if the request fails
+    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: text summary
     :rtype: Optional[str]
     """
@@ -39,7 +41,7 @@ def _summary_api_request(text: str, percent: float) -> Optional[dict]:
 
     headers = {
         'content-type': 'application/json',
-        'X-RapidAPI-Key': config.TEXT_ANALYSIS_API_KEY,
+        'X-RapidAPI-Key': config.RAPID_API_KEY,
         'X-RapidAPI-Host': 'text-analysis12.p.rapidapi.com'
     }
 

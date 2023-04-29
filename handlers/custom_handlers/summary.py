@@ -18,7 +18,7 @@ def get_news_from_file() -> str:
 @bot.message_handler(commands=['summary'])
 def bot_summary(message: Message) -> None:
     """
-    Handles the summary command
+    Handles the /summary command
 
     :param message: incoming message
     :type message: Message
@@ -28,7 +28,8 @@ def bot_summary(message: Message) -> None:
     try:
         summary_text = get_summary(text)
         bot.reply_to(message, summary_text)
-    except (requests.RequestException, requests.exceptions.JSONDecodeError) as exception:
+    except (requests.RequestException,
+            requests.exceptions.JSONDecodeError) as exception:
         logger.exception(exception)
         # TODO: be more specific?
         bot.reply_to(

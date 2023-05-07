@@ -10,6 +10,11 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 RAPID_API_KEY = os.getenv('RAPID_API_KEY')
 
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+REDIS_DB = os.getenv('REDIS_DB')
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+
 DEFAULT_COMMANDS = (
     ('start', 'Запустить бота'),
     ('help', 'Вывести справку'),

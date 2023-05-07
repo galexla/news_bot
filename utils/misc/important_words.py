@@ -1,7 +1,7 @@
+import math
 import re
 from collections import Counter
 from typing import Iterable
-
 import wordfreq
 
 
@@ -105,6 +105,7 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     n_words = len(all_words)
     counter = Counter(all_words)
 
+    minus_inf = float('-inf')
     for word, count in counter.items():
         if word in important_words:
             continue
@@ -112,14 +113,15 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
         frequency = count / n_words
         usual_frequency = wordfreq.word_frequency(
             word, 'en', wordlist='best', minimum=0.0)
-        importance = frequency / usual_frequency if usual_frequency != 0 else -10
+        importance = math.log2(
+            frequency / usual_frequency) if usual_frequency != 0 else minus_inf
 
         important_words[word] = importance
 
     max_importance = max(important_words.values(), key=lambda x: x)
     max_importance = max(max_importance, 1)
     for word in important_words.keys():
-        if important_words[word] == -10:
-            important_words[word] = max_importance * 0.9
+        if important_words[word] == minus_inf:
+            important_words[word] = max_importance * 0.8
 
     return important_words

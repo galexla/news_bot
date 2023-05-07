@@ -37,3 +37,5 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - .:/app
+    ports:
+      - "5678:5678"

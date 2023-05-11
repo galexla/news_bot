@@ -1,3 +1,2 @@
-from . import misc
-from .get_news import get_news
-from .get_summary import get_summary
+from . import misc, news
+from .summary import get_summary

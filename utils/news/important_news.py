@@ -1,9 +1,9 @@
 from typing import Iterable
 
-from utils.misc.important_words import get_important_words, get_words
+from utils.news.important_words import get_important_words, get_words
 
 
-def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> list[dict]:
+def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> dict[dict]:
     """
     Gets most important news
 

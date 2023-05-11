@@ -15,9 +15,10 @@ REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_DB = os.getenv('REDIS_DB')
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 
+# TODO: remove summary command
 DEFAULT_COMMANDS = (
     ('start', 'Запустить бота'),
     ('help', 'Вывести справку'),
-    ('summary', 'Получить краткое содержание новостей за неделю'),
+    # ('summary', 'Получить краткое содержание новостей за неделю'),
     ('news', 'Получить новости')
 )

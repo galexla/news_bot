@@ -1,4 +1,6 @@
+import re
 from random import randint
+from typing import Callable, Iterator
 
 
 def get_summary_input(news: list[dict], key: str) -> str:
@@ -109,6 +111,43 @@ def _get_news_for_summary(news: list, n_chunks: int) -> list[dict]:
     return result
 
 
+def _clean_news_text(text: str) -> str:
+    """
+    Cleans news text and adds a dot at the end if it's missing
+
+    :param text: text to clean
+    :type text: str
+    :return: cleaned text
+    :rtype: str
+    """
+    text = text.strip(' \n\r\t[]():;,{}|')
+    text = re.sub(r'([^\.\?\!])$', r'\1.', text)
+
+    return text
+
+
+def _iterate_news_key(news: list[dict], key: str,
+                      callback: Callable[[str], str]) -> Iterator[str]:
+    """
+    Iterates over news and applies callback to each item
+
+    :param news: news
+    :type news: list[dict]
+    :param key: field to get text from
+    :type key: str
+    :param callback: callback to apply to each item
+    :type Callable[[str], str]: callable
+    :return: iterator
+    :rtype: Iterator[str]
+    """
+    for item in news:
+        if key not in item:
+            continue
+        text = callback(item[key])
+        if text != '':
+            yield text
+
+
 def _join_news(news: list[dict], key: str) -> str:
     """
     Joins news text
@@ -120,5 +159,5 @@ def _join_news(news: list[dict], key: str) -> str:
     :return: joined news
     :rtype: str
     """
-    # TODO: !! finish
-    return ' '.join([item[key] for item in news])
+    news_iter = _iterate_news_key(news, key, _clean_news_text)
+    return '\n'.join(news_iter)

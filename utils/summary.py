@@ -1,30 +1,10 @@
 from typing import Optional
 
 from config_data import config
-from utils.misc import api_request, get_json_value, redis_cache
+from utils.misc import api_request, get_json_value
 
 
-def get_summary(search_query: str, datetime_from: str,
-                datetime_to: str) -> Optional[str]:
-    summary_text = redis_cache.get_summary(
-        search_query, datetime_from, datetime_to)
-
-    if summary_text:
-        return summary_text
-    else:
-        summary_input = redis_cache.get_summary_input(
-            search_query, datetime_from, datetime_to)
-        if summary_input:
-            summary_text = _get_summary(summary_input)
-            if summary_text:
-                redis_cache.set_summary(
-                    search_query, datetime_from, datetime_to, summary_text)
-                return summary_text
-
-    return None
-
-
-def _get_summary(summary_input: str, n_characters: int = 500) -> Optional[str]:
+def get_summary(summary_input: str, n_characters: int = 500) -> Optional[str]:
     """
     Gets text summary using Text-analysis12 API
 

@@ -7,12 +7,14 @@ from telebot.types import Message
 from loader import bot
 
 
-def get_search_data(chat_id: int, user_id: int) -> Tuple[str, str, str, str, str]:
+def get_search_data(user_id: int, chat_id: int) -> Tuple[str, str, str, str, str]:
     """
     Gets saved news search data
 
-    :param message: incoming message
-    :type message: Message
+    :param user_id: user id
+    :type user_id: int
+    :param chat_id: chat id
+    :type chat_id: int
     :return: search query, start datetime, end datetime, start date, end date
     :rtype: Tuple[str, str, str, str, str]
     """

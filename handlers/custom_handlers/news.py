@@ -19,8 +19,7 @@ def bot_news(message: Message) -> None:
     :type message: Message
     :rtype: None
     """
-    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-        data['invalid_count'] = 0
+    bot.reset_data(message.from_user.id, message.chat.id)
 
     bot.set_state(message.from_user.id,
                   NewsState.search_query, message.chat.id)
@@ -86,29 +85,38 @@ def date_to(message: Message) -> None:
                       next_state=NewsState.getting_news,
                       next_message='Getting news...')
 
-        _get_news(message)
+        _get_news(message.chat.id, message.from_user.id)
 
 
-def _get_news(message: Message):
+def _get_news(chat_id: int, user_id: int):
+    """
+    Gets news count, summary input and 50 most important news based
+    on news got from API or from cache. Sends a message with news count.
+
+    :param chat_id: chat id
+    :type chat_id: int
+    :param user_id: user id
+    :type user_id: int
+    :rtype: None
+    """    
     try:
         search_query_, datetime_from_, datetime_to_, date_from_, date_to_ = \
-            news_utils.get_search_data(message.chat.id, message.from_user.id)
-        # news_count = utils.get_news('Russia', '2023-04-03T00:00:00', '2023-04-09T23:59:59')
-        news_count = get_news(
-            search_query_, datetime_from_, datetime_to_)
+            news_utils.get_search_data(user_id, chat_id)
+        news_count, _, _ = get_news(search_query_, datetime_from_, datetime_to_)
 
-        bot.set_state(message.from_user.id,
-                      NewsState.got_news, message.chat.id)
+        bot.set_state(user_id, NewsState.got_news, chat_id)
 
         text = f'Got {news_count} news for a search query "{search_query_}" '\
             f'from {date_from_} to {date_to_}. Now you can start analyzing them.'
-        bot.send_message(message.chat.id, text,
-                         reply_markup=menu.menu_markup())
+        bot.send_message(chat_id, text, reply_markup=menu.menu_markup())
     except (requests.RequestException, requests.exceptions.JSONDecodeError,
             ValueError) as exception:
         logger.exception(exception)
-        bot.delete_state(message.from_user.id, message.chat.id)
-        bot.send_message(message.chat.id, 'Some error occurred.')
+        bot.delete_state(user_id, chat_id)
+        if isinstance(exception, ValueError):
+            bot.send_message(chat_id, 'Error. Invalid data.')
+        else:
+            bot.send_message(chat_id, 'Some error occurred.')
 
 
 def _handle_valid(message: Message, save_key: str, save_value: str,

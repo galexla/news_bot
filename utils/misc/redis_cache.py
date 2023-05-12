@@ -1,167 +1,84 @@
 import datetime
+import functools
 import json
-from typing import Optional
+from typing import Any, Callable, Iterable
 
 from loader import redis_connection
 
+# TODO: remove these comments
+# prefixes: summary, summary_input, most_important_news, news_count
 
-def get_summary(search_query: str, date_from: str, date_to: str) -> Optional[str]:
+
+def all_exist(prefixes: Iterable[str], search_query: str, date_from: str,
+              date_to: str) -> bool:
     """
-    Gets text summary from Redis
+    Checks if all of keys exist in Redis
 
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date
-    :type date_from: str
-    :param date_to: end date
-    :type date_to: str
-    :return: text summary
-    :rtype: Optional[str]
+    :param keys: keys
+    :type keys: Iterable[str]
+    :return: True if all of keys exist in Redis, False otherwise
+    :rtype: bool
     """
-    key = _get_key('summary', search_query, date_from, date_to)
-    summary = redis_connection.get(key)
+    return all(
+        redis_connection.exists(
+            get_key(prefix, search_query, date_from, date_to))
+        for prefix in prefixes)
 
-    return summary
+
+def cached(prefix: str) -> Callable:
+    def decorator(func) -> Callable:
+        @functools.wraps(func)
+        def wrapper(search_query: str, date_from: str, date_to: str,
+                    *args, **kwargs) -> Any:
+            key = get_key(prefix, search_query, date_from, date_to)
+            if redis_connection.exists(key):
+                return get(key)
+
+            result = func(search_query, date_from, date_to, *args, **kwargs)
+
+            ttl = _get_ttl(date_to)
+            set(key, result, ex=ttl)
+
+            return result
+
+        return wrapper
+
+    return decorator
 
 
-def set_summary(search_query: str, date_from: str, date_to: str, text: str) -> None:
+def get(key: str) -> Any:
     """
-    Caches summary text to Redis
+    Gets value from Redis
 
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date
-    :type date_from: str
-    :param date_to: end date
-    :type date_to: str
-    :param text: summary text
-    :type text: str
+    :param key: key
+    :type key: str
+    :return: value
+    :rtype: Any
+    """
+    value = redis_connection.get(key)
+    return _cast_type(value)
+
+
+def set(key: str, value: Any, ex: int = None) -> None:
+    """
+    Sets value to Redis
+
+    :param key: key
+    :type key: str
+    :param value: value
+    :type value: Any
+    :param ex: TTL in seconds
+    :type ex: int
     :return: None
+    :rtype: None
     """
-    key = _get_key('summary', search_query, date_from, date_to)
-    ttl = _get_ttl(date_to)
-    redis_connection.set(key, text, ex=ttl)
+    if isinstance(value, (dict, list)):
+        value = json.dumps(value)
+    redis_connection.set(key, value, ex=ex)
 
 
-def get_summary_input(search_query: str, date_from: str, date_to: str) -> Optional[str]:
-    """
-    Gets text to be summarized from Redis
-
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date
-    :type date_from: str
-    :param date_to: end date
-    :type date_to: str
-    :return: text to be summarized
-    :rtype: str
-    """
-    key = _get_key('summary_input', search_query, date_from, date_to)
-    text = redis_connection.get(key)
-
-    return text
-
-
-def set_summary_input(search_query: str, date_from: str, date_to: str, text: str) -> None:
-    """
-    Caches text to be summarized to Redis
-
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date in format 2000-01-01T00:00:00
-    :type date_from: str
-    :param date_to: end date in format 2000-01-01T00:00:00
-    :type date_to: str
-    :param text: text
-    :type text: str
-    :return: None
-    """
-    key = _get_key('summary_input', search_query, date_from, date_to)
-    ttl = _get_ttl(date_to)
-    redis_connection.set(key, text, ex=ttl)
-
-
-def get_most_important_news(search_query: str, date_from: str, date_to: str) -> Optional[dict[dict]]:
-    """
-    Gets most important news from Redis
-
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date
-    :type date_from: str
-    :param date_to: end date
-    :type date_to: str
-    :return: most important news
-    :rtype: Optional[dict[dict]]
-    """
-    key = _get_key('most_important_news', search_query, date_from, date_to)
-    news = redis_connection.get(key)
-
-    if news is None:
-        return None
-    return json.loads(news)
-
-
-def set_most_important_news(search_query: str, date_from: str, date_to: str, news: dict[dict]) -> None:
-    """
-    Caches most important news to Redis
-
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type date_from: str
-    :param date_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type date_to: str
-    :param news: news
-    :type news: list[dict]
-    :return: None
-    """
-    key = _get_key('most_important_news', search_query, date_from, date_to)
-    ttl = _get_ttl(date_to)
-    redis_connection.set(key, json.dumps(news), ex=ttl)
-
-
-def get_news_count(search_query: str, date_from: str, date_to: str) -> Optional[int]:
-    """
-    Gets news count from Redis
-
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date
-    :type date_from: str
-    :param date_to: end date
-    :type date_to: str
-    :return: news count
-    :rtype: int
-    """
-    key = _get_key('news_count', search_query, date_from, date_to)
-    count = redis_connection.get(key)
-
-    if count is None:
-        return None
-    return int(count)
-
-
-def set_news_count(search_query: str, date_from: str, date_to: str, news: list[dict]) -> None:
-    """
-    Caches news count to Redis
-
-    :param search_query: search query
-    :type search_query: str
-    :param date_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type date_from: str
-    :param date_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type date_to: str
-    :param news: news
-    :type news: list[dict]
-    :return: None
-    """
-    key = _get_key('news_count', search_query, date_from, date_to)
-    ttl = _get_ttl(date_to)
-    redis_connection.set(key, len(news), ex=ttl)
-
-
-def _get_key(prefix: str, search_query: str, date_from: str, date_to: str) -> str:
+def get_key(prefix: str, search_query: str, date_from: str,
+            date_to: str) -> str:
     """
     Gets Redis key
 
@@ -177,6 +94,36 @@ def _get_key(prefix: str, search_query: str, date_from: str, date_to: str) -> st
     :rtype: str
     """
     return f'{prefix}:{search_query}:{date_from}:{date_to}'
+
+
+def _cast_type(value: Any) -> Any:
+    """
+    Tries to cast value to int, float or json
+
+    :param value: value
+    :type value: Any
+    :return: simple value
+    :rtype: Any
+    """
+    if value is None:
+        return value
+
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    try:
+        return float(value)
+    except ValueError:
+        pass
+
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        pass
+
+    return value
 
 
 def _get_ttl(date_to: str) -> int:

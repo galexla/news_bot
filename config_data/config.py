@@ -1,6 +1,5 @@
 import os
 from dotenv import find_dotenv, load_dotenv
-from distutils.util import strtobool
 
 if not find_dotenv():
     exit('No environment variables found, .env file does not exist')
@@ -22,7 +21,7 @@ POSTGRES_DB = os.getenv('POSTGRES_DB')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
-DEBUG = strtobool(os.getenv('DEBUG', 'False'))
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # TODO: remove summary command
 DEFAULT_COMMANDS = (

@@ -3,6 +3,8 @@ import functools
 import json
 from typing import Any, Callable, Iterable
 
+from loguru import logger
+
 from loader import redis_connection
 
 # TODO: remove these comments
@@ -25,25 +27,34 @@ def all_exist(prefixes: Iterable[str], search_query: str, date_from: str,
         for prefix in prefixes)
 
 
-def cached(prefix: str) -> Callable:
+def cached(prefix: str, search_query: str, date_from: str, date_to: str) -> Callable:
     def decorator(func) -> Callable:
         @functools.wraps(func)
-        def wrapper(search_query: str, date_from: str, date_to: str,
-                    *args, **kwargs) -> Any:
+        def wrapper(*args, **kwargs) -> Any:
             key = get_key(prefix, search_query, date_from, date_to)
+            result = None
             if redis_connection.exists(key):
-                return get(key)
+                result = get(key)
+            else:
+                result = func(*args, **kwargs)
+                ttl = _get_ttl(date_to)
+                set(key, result, ex=ttl)
 
-            result = func(search_query, date_from, date_to, *args, **kwargs)
-
-            ttl = _get_ttl(date_to)
-            set(key, result, ex=ttl)
+            logger.debug(f'Got {prefix}: {_get_str_for_log(result)}')
 
             return result
 
         return wrapper
 
     return decorator
+
+
+def _get_str_for_log(value: Any) -> str:
+    if isinstance(value, (dict, list)):
+        return f'count={len(value)}'
+    if isinstance(value, str):
+        return f'{value[:100]}...'
+    return value
 
 
 def get(key: str) -> Any:

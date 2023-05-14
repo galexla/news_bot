@@ -7,7 +7,7 @@ from keyboards.reply import menu
 from loader import bot
 from states.news_state import NewsState
 from utils.news import utils as news_utils
-from utils.news.news import get_news
+from utils.news.news import get_news_semimanufactures
 
 
 @bot.message_handler(commands=['news'])
@@ -98,11 +98,12 @@ def _get_news(chat_id: int, user_id: int):
     :param user_id: user id
     :type user_id: int
     :rtype: None
-    """    
+    """
     try:
         search_query_, datetime_from_, datetime_to_, date_from_, date_to_ = \
-            news_utils.get_search_data(user_id, chat_id)
-        news_count, _, _ = get_news(search_query_, datetime_from_, datetime_to_)
+            news_utils.retrieve_user_input(user_id, chat_id)
+        news_count, _, _ = get_news_semimanufactures(
+            search_query_, datetime_from_, datetime_to_)
 
         bot.set_state(user_id, NewsState.got_news, chat_id)
 

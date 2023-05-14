@@ -7,9 +7,9 @@ from telebot.types import Message
 from loader import bot
 
 
-def get_search_data(user_id: int, chat_id: int) -> Tuple[str, str, str, str, str]:
+def retrieve_user_input(user_id: int, chat_id: int) -> Tuple[str, str, str, str, str]:
     """
-    Gets saved news search data
+    Gets news search data previously input by user
 
     :param user_id: user id
     :type user_id: int

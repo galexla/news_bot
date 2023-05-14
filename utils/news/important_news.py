@@ -5,12 +5,13 @@ from utils.news.important_words import get_important_words, get_words
 
 def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> dict[dict]:
     """
-    Gets most important news
+    Returns news ordered by descending importance in format:
+    {id: {importance: float, news: dict}, ...}
 
     :param news: news
     :type news: list[dict]
     :return: most important news
-    :rtype: list[dict]
+    :rtype: dict[dict]
     """
     if not news or not text_keys:
         return []

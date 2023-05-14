@@ -58,6 +58,28 @@ def get_news(search_query: str, date_from: str, date_to: str) -> list[dict]:
 def add_first_page_of_news(news: list[dict], search_query: str,
                            date_from: str, date_to: str, news_per_page: int,
                            query_sleep_time: float) -> tuple[int, float]:
+    """
+    Gets first page of news with API and adds it to news list
+
+    :param news: news list
+    :type news: list[dict]
+    :param search_query: query to search
+    :type search_query: str
+    :param date_from: start date in format %Y-%m-%dT%H:%M:%S
+    :type date_from: str
+    :param date_to: end date in format %Y-%m-%dT%H:%M:%S
+    :type date_to: str
+    :param news_per_page: number of news per page
+    :type news_per_page: int
+    :param query_sleep_time: time to sleep between queries
+    :type query_sleep_time: float
+    :raise ValueError: raised when search query is empty
+    :raise ValueError: raised when date is invalid
+    :raise requests.RequestException: raised if the request fails
+    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
+    :return: total news count for the query and query time
+    :rtype: tuple[int, float]
+    """
     start_time = datetime.now()
     n_news_total = _add_news(news, search_query, date_from,
                              date_to, [1], news_per_page, query_sleep_time)
@@ -85,6 +107,10 @@ def _add_news(news: list[dict], search_query: str, date_from: str, date_to: str,
     :type news_per_page: int
     :param sleep_time: time to sleep between queries, in seconds
     :type sleep_time: float
+    :raise ValueError: raised when search query is empty
+    :raise ValueError: raised when date is invalid
+    :raise requests.RequestException: raised if the request fails
+    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: total news count for the query
     :rtype: int
     """

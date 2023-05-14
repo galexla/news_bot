@@ -1,7 +1,8 @@
 import datetime
 import time
-from loguru import logger
+
 import requests
+from loguru import logger
 
 
 def api_request(method_type: str, url: str, headers: dict, request: dict,
@@ -50,7 +51,7 @@ def api_request(method_type: str, url: str, headers: dict, request: dict,
 
         if response.status_code == requests.codes.ok:
             logger.success('Got answer({}) from {} , answer={}'.format(
-                len(response.text), url, response.text[:60]))
+                len(response.text), url, response.text[:100]))
 
             try:
                 return response.json()

@@ -1,7 +1,7 @@
 # News bot
 
 ## Prerequisites
-Before running you need to have `data` directory with write access in root of your project to keep Redis and PostgreSQL data there.
+Before running you need to have `data` directory with write access in the root of your project to keep Redis and PostgreSQL data there.
 
 ## Running bot
 `docker compose up`
@@ -12,6 +12,8 @@ To debug set DEBUG variable in your .env file to True
 ## Bot usage
 
 * /news - gets news and allows to analyze them further:
-  * to get summary text
-  * to get 5 most important news
+  * Get summary text
+  * Get 5 most important news:
+    * Get emotions of a news article
+    * Read full article on the Web
 * /help - displays help

@@ -2,7 +2,7 @@ import random
 import re
 from typing import Iterable
 
-from utils.misc import api_request
+from utils.misc import send_chatgpt_request
 from utils.misc.json_value import get_json_value
 
 
@@ -22,7 +22,7 @@ def get_top_news(important_news: dict[dict]) -> list[dict]:
 
     news_text = _news_to_text(random_news)
     chatgpt_prompt = _get_chatgpt_prompt(news_text)
-    response = _send_chatgpt_request(chatgpt_prompt)
+    response = send_chatgpt_request(chatgpt_prompt)
 
     response_text = get_json_value(
         response, ['choices', 0, 'message', 'content'])
@@ -96,38 +96,6 @@ title2
 
 {news}
 '''
-
-
-def _send_chatgpt_request(prompt: str) -> list | dict:
-    """
-    Sends request to GPT-3 chatbot
-
-    :param prompt: prompt for GPT-3 chatbot
-    :type prompt: str
-    :return: response from GPT-3 chatbot
-    :rtype: list | dict
-    """
-    url = "https://openai80.p.rapidapi.com/chat/completions"
-
-    payload = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    }
-
-    headers = {
-        "content-type": "application/json",
-        "X-RapidAPI-Key": "ea1331345emshee44dbb8dc2d3dep1e50c2jsne86eb1384009",
-        "X-RapidAPI-Host": "openai80.p.rapidapi.com"
-    }
-
-    json_ = api_request('POST', url, headers, payload, retry_on_too_many=False)
-
-    return json_
 
 
 def _decode_chatgpt_answer(answer: str) -> list[dict]:

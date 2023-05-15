@@ -5,7 +5,7 @@ from telebot.types import CallbackQuery
 from loader import bot
 from states.news_state import NewsState
 from utils import get_summary
-from utils.misc import redis_cache
+from utils.misc import redis_cache as cache
 from utils.news import utils as news_utils
 
 
@@ -27,16 +27,17 @@ def bot_summary(call: CallbackQuery):
         news_utils.retrieve_user_input(chat_id, user_id)
 
     try:
-        key = redis_cache.get_key('summary_input', search_query,
-                                  datetime_from, datetime_to)
-        summary_input = redis_cache.get(key)
+        key_summary_input = cache.get_key(
+            'summary_input', search_query, datetime_from, datetime_to)
+        summary_input = cache.get(key_summary_input)
         if not summary_input:
             raise ValueError('No summary input found.')
 
-        cached_get_summary = redis_cache.cached(
-            'summary', search_query, datetime_from, datetime_to)(get_summary)
-        summary_text = cached_get_summary(
-            search_query, datetime_from, datetime_to, summary_input)
+        key_summary = cache.get_key(
+            'summary', search_query, datetime_from, datetime_to)
+        cached_get_summary = cache.cached(
+            key_summary, datetime_to)(get_summary)
+        summary_text = cached_get_summary(summary_input)
 
         if summary_text:
             bot.send_message(chat_id, summary_text)

@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from utils.misc import redis_cache
+from utils.misc import redis_cache as cache
 from utils.news import news_api
 from utils.news.important_news import order_news_by_importance
 from utils.news.summary_input import get_summary_input
@@ -30,19 +30,27 @@ def get_news_semimanufactures(search_query: str, date_from: str,
 
     news = None
     prefixes = ('news_count', 'summary_input', 'most_important_news')
-    if not redis_cache.all_exist(prefixes, search_query, date_from, date_to):
+    if not all(cache.exists(cache.get_key(prefix, search_query, date_from, date_to))
+               for prefix in prefixes):
         news = news_api.get_news(search_query, date_from, date_to)
 
-    cached_get_news_count = redis_cache.cached(
-        'news_count', search_query, date_from, date_to)(get_news_count)
+    key_news_count = cache.get_key(
+        'news_count', search_query, date_from, date_to)
+    cached_get_news_count = cache.cached(
+        key_news_count, date_to)(get_news_count)
     news_count = cached_get_news_count(news)
 
-    cached_get_summary_input = redis_cache.cached(
-        'summary_input', search_query, date_from, date_to)(get_summary_input)
+    key_summary_input = cache.get_key(
+        'summary_input', search_query, date_from, date_to)
+    cached_get_summary_input = cache.cached(
+        key_summary_input, date_to)(get_summary_input)
     summary_input = cached_get_summary_input(news, text_key)
 
-    cached_order_news_by_importance = redis_cache.cached(
-        'most_important_news', search_query, date_from, date_to)(order_news_by_importance)
+    key_most_important_news = cache.get_key(
+        'most_important_news', search_query, date_from, date_to)
+    cached_order_news_by_importance = \
+        cache.cached(key_most_important_news, date_to)(
+            order_news_by_importance)
     news_by_importance = cached_order_news_by_importance(news, text_key)
 
     return news_count, summary_input, news_by_importance

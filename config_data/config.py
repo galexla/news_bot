@@ -23,10 +23,7 @@ POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# TODO: remove summary command
 DEFAULT_COMMANDS = (
-    ('start', 'Запустить бота'),
-    ('help', 'Вывести справку'),
-    # ('summary', 'Получить краткое содержание новостей за неделю'),
-    ('news', 'Получить новости')
+    ('help', 'Display help'),
+    ('news', 'Get news'),
 )

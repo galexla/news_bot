@@ -3,7 +3,7 @@ from loguru import logger
 from telebot.handler_backends import State
 from telebot.types import Message
 
-from keyboards.reply import menu
+from keyboards.reply import main_menu
 from loader import bot
 from states.news_state import NewsState
 from utils.news import utils as news_utils
@@ -109,7 +109,7 @@ def _get_news(chat_id: int, user_id: int):
 
         text = f'Got {news_count} news for a search query "{search_query_}" '\
             f'from {date_from_} to {date_to_}. Now you can start analyzing them.'
-        bot.send_message(chat_id, text, reply_markup=menu.menu_markup())
+        bot.send_message(chat_id, text, reply_markup=main_menu.menu())
     except (requests.RequestException, requests.exceptions.JSONDecodeError,
             ValueError) as exception:
         logger.exception(exception)

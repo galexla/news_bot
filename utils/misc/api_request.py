@@ -90,8 +90,10 @@ def _get_retry_delay(response: requests.Response) -> int:
     :return: delay before retrying
     :rtype: int
     """
-    retry_time = response.headers['Retry-After']
-    if retry_time.isdigit():
+    retry_time = response.headers.get('Retry-After')
+    if retry_time is None:
+        return 0
+    elif retry_time.isdigit():
         return int(retry_time)
     else:
         # Retry-After is a date

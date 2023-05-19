@@ -6,9 +6,10 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 def main(news: Iterable[dict]) -> InlineKeyboardMarkup:
     menu_ = InlineKeyboardMarkup()
     for item in news:
-        text = item['title'][:50] + '...'
-        data = f'news_{item["id"]}'
-        menu_.add(InlineKeyboardButton(text=text, callback_data=data))
+        id = item['id']
+        title = item['title'].strip()
+        data = f'news_{id}'
+        menu_.add(InlineKeyboardButton(text=title, callback_data=data))
 
     return menu_
 

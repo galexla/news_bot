@@ -1,5 +1,5 @@
 import re
-from typing import Iterator
+from typing import Iterable, Iterator
 
 import requests
 from loguru import logger
@@ -30,30 +30,22 @@ def bot_top_news(call: CallbackQuery):
     search_query, datetime_from, datetime_to, _, _ = \
         news_utils.retrieve_user_input(chat_id, user_id)
 
-    try:
-        most_important_news = get_cached_most_important_news(
-            search_query, datetime_from, datetime_to)
+    most_important_news = get_cached_most_important_news(
+        search_query, datetime_from, datetime_to)
 
-        key_top_news = cache.get_key(
-            'top_news', search_query, datetime_from, datetime_to)
-        cached_get_top_news = cache.cached(
-            key_top_news, datetime_to)(get_top_news)
-        top_news = cached_get_top_news(most_important_news)
+    key_top_news = cache.get_key(
+        'top_news', search_query, datetime_from, datetime_to)
+    cached_get_top_news = cache.cached(
+        key_top_news, datetime_to)(get_top_news)
+    top_news = cached_get_top_news(most_important_news)
 
-        if top_news:
-            # text = top_news_to_str(top_news, most_important_news)
-            # bot.send_message(chat_id, text)
-            text = 'Here are the top news. You can choose one to list emotion'\
-                ' or to read the full article.'
-            menu_data = get_main_menu_data(top_news, most_important_news)
-            bot.send_message(
-                chat_id, text, reply_markup=top_news_menu.main(menu_data))
-        else:
-            bot.send_message(chat_id, 'Unable to get top news.')
-    except (requests.RequestException, ValueError,
-            requests.exceptions.JSONDecodeError) as exception:
-        logger.exception(exception)
-        bot.send_message(chat_id, 'Some error occurred.')
+    if top_news:
+        text = 'Here are the top news. You can choose one to list emotions'\
+            ' or to read the full article.'
+        bot.send_message(
+            chat_id, text, reply_markup=top_news_menu.main(top_news))
+    else:
+        bot.send_message(chat_id, 'Unable to get top news.')
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('news_'), state=NewsState.got_news)
@@ -111,29 +103,3 @@ def get_cached_most_important_news(search_query: str, date_from: str,
         raise ValueError('Most important news not found.')
 
     return most_important_news
-
-
-def get_main_menu_data(top_news: list[dict],
-                       most_important_news: dict[dict]) -> Iterator[dict]:
-    for item in top_news:
-        id = item['id']
-        yield most_important_news[id]['news']
-
-
-# TODO: remove this function?
-def top_news_to_str(top_news: list[dict], most_important_news: dict[dict]) -> str:
-    """
-    Converts top news to string
-
-    :param top_news: top news
-    :type top_news: list[dict]
-    :return: top news in string format
-    :rtype: str
-    """
-    top_news_str = ''
-    for i_item, item in enumerate(top_news, 1):
-        news = most_important_news[item['id']]['news']
-        top_news_str += \
-            f'{i_item}. {news["title"]}\n  {news["description"]}\n{news["url"]}\n\n'
-
-    return top_news_str

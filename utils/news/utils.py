@@ -1,8 +1,6 @@
-import datetime
 import re
+from datetime import date, datetime, timedelta
 from typing import Tuple
-
-from telebot.types import Message
 
 from loader import bot
 
@@ -38,7 +36,7 @@ def is_datetime_valid(date: str) -> bool:
     :rtype: bool
     """
     try:
-        datetime.datetime.fromisoformat(date)
+        datetime.fromisoformat(date)
     except:
         return False
 
@@ -54,7 +52,29 @@ def is_date_valid(date: str) -> bool:
     :rtype: bool
     """
     try:
-        datetime.datetime.strptime(date, '%Y-%m-%d')
+        datetime.strptime(date, '%Y-%m-%d')
         return True
     except ValueError:
         return False
+
+
+def get_first_day_of_week(date: date) -> date:
+    """
+    Gets first day of week
+
+    :param date: date
+    :type date: date
+    :rtype: date
+    """
+    return date - timedelta(days=date.weekday())
+
+
+def get_last_day_of_week(date: date) -> date:
+    """
+    Gets last day of week
+
+    :param date: date
+    :type date: date
+    :rtype: date
+    """
+    return date + timedelta(days=6 - date.weekday())

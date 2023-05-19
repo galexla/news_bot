@@ -1,6 +1,9 @@
 import random
 import re
-from typing import Iterable
+from typing import Iterable, Iterator
+
+import requests
+from loguru import logger
 
 from utils.misc import send_chatgpt_request
 from utils.misc.json_value import get_json_value
@@ -22,11 +25,21 @@ def get_top_news(important_news: dict[dict]) -> list[dict]:
 
     news_text = _news_to_text(random_news)
     chatgpt_prompt = _get_chatgpt_prompt(news_text)
-    response = send_chatgpt_request(chatgpt_prompt)
 
-    response_text = get_json_value(
-        response, ['choices', 0, 'message', 'content'])
-    news = _decode_chatgpt_answer(response_text)
+    try:
+        response = send_chatgpt_request(chatgpt_prompt)
+        response_text = get_json_value(
+            response, ['choices', 0, 'message', 'content'])
+        top_news = _decode_chatgpt_answer(response_text)
+
+        top_news_ids = (news['id'] for news in top_news)
+        news = get_news_by_ids(top_news_ids, important_news)
+    except (requests.RequestException,
+            requests.exceptions.JSONDecodeError) as exception:
+        logger.exception(exception)
+
+        top_news_ids = get_top_news_ids_simple(important_news)
+        news = get_news_by_ids(top_news_ids, important_news)
 
     return news
 
@@ -119,3 +132,42 @@ def _decode_chatgpt_answer(answer: str) -> list[dict]:
         })
 
     return news
+
+
+def get_news_by_ids(ids: Iterable[str],
+                    most_important_news: dict[dict]) -> list[dict]:
+    """
+    Gets news by ids
+
+    :param ids: ids
+    :type ids: Iterable[str]
+    :param most_important_news: most important news
+    :type most_important_news: dict[dict]
+    :return: news
+    :rtype: list[dict]
+    """
+    return [most_important_news[id]['news'] for id in ids]
+
+
+def get_top_news_ids_simple(most_important_news: dict[dict]) -> Iterator[str]:
+    """
+    Gets top news if GPT-3 request failed
+
+    :param most_important_news: most important news
+    :type most_important_news: dict[dict]
+    :return: news ids
+    :rtype: Iterator[str]
+    """
+    if len(most_important_news) < 8:
+        indexes = (1, 2, 3, 5, 8)
+    else:
+        indexes = tuple(range(1, 6))
+
+    max_i = max(indexes)
+    i = 1
+    for id in most_important_news.keys():
+        if i in indexes:
+            i += 1
+            yield id
+        if i > max_i:
+            break

@@ -1,6 +1,7 @@
 from typing import Iterable
 
 from utils.news.important_words import get_important_words, get_words
+from utils.news.utils import news_to_iterator
 
 
 def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> dict[dict]:
@@ -17,7 +18,8 @@ def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> dic
         return []
 
     important_news = {}
-    important_words = get_important_words(news, text_keys)
+    news_texts = news_to_iterator(news, text_keys)
+    important_words = get_important_words(news_texts)
 
     for news_item in news:
         important_news[news_item['id']] = {'importance': 0, 'news': news_item}

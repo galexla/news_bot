@@ -1,6 +1,6 @@
 import re
 from datetime import date, datetime, timedelta
-from typing import Tuple
+from typing import Iterable, Iterator, Tuple
 
 from loader import bot
 
@@ -78,3 +78,19 @@ def get_last_day_of_week(date: date) -> date:
     :rtype: date
     """
     return date + timedelta(days=6 - date.weekday())
+
+
+def news_to_iterator(news: list[dict], text_keys: Iterable[str],
+                     separator: str = '\n') -> Iterator[str]:
+    """
+    Converts news to iterator of texts
+
+    :param news: news
+    :type news: list[dict]
+    :param text_keys: text keys
+    :type text_keys: Iterable[str]
+    :rtype: Iterable[str]
+    """
+    for news_item in news:
+        text = separator.join(news_item.get(key, '') for key in text_keys)
+        yield text

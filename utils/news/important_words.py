@@ -5,20 +5,21 @@ from typing import Iterable
 import wordfreq
 
 
-def get_important_words(news: list[dict], text_keys: str | Iterable, words_percent: int = 25) -> dict:
+def get_important_words(texts: Iterable[str] | str, words_percent: int = 25) -> dict:
     """
     Gets most important words from news
 
-    :param news: news
-    :type news: list[dict]
-    :param text_keys: keys to get text from news
-    :type text_keys: str | Iterable
+    :param texts: texts
+    :type texts: str | Iterable
     :param words_percent: percent of words to get
     :type words_percent: int
     :return: dictionary with most important words
     :rtype: dict
     """
-    all_words = get_all_words(news, text_keys)
+    if isinstance(texts, str):
+        texts = [texts]
+
+    all_words = get_all_words(texts)
     important_words = _get_words_importance(all_words)
 
     important_words = sorted(important_words.items(),
@@ -31,50 +32,38 @@ def get_important_words(news: list[dict], text_keys: str | Iterable, words_perce
     return important_words
 
 
-def get_all_words(news: list[dict], text_keys: str | Iterable) -> list[str]:
+def get_all_words(texts: Iterable[str]) -> list[str]:
     """
     Gets all words from news
 
-    :param news: news
-    :type news: list[dict]
-    :param text_keys: keys to get text from news
-    :type text_keys: str | Iterable
+    :param texts: keys to get text from news
+    :type texts: Iterable[str]
     :return: all words
     :rtype: list[str]
     """
-    if isinstance(text_keys, str):
-        text_keys = [text_keys]
-
     all_words = []
 
-    for news_item in news:
-        words = get_words(news_item, text_keys)
+    for text in texts:
+        words = get_words(text)
         all_words.extend(words)
 
     return all_words
 
 
-def get_words(news_item: dict, text_keys: str | Iterable) -> list[str]:
+def get_words(text: str) -> list[str]:
     """
     Gets words from news item
 
-    :param news_item: news item
-    :type news_item: dict
+    :param text: text
+    :type text: str
     :return: words
     :rtype: list[str]
     """
-    if isinstance(text_keys, str):
-        text_keys = [text_keys]
+    text = text.strip()
+    if len(text) > 0:
+        return _re_get_words(text)
 
-    all_words = []
-
-    for text_key in text_keys:
-        text = news_item.get(text_key, '').strip()
-        if len(text) > 0:
-            words = _re_get_words(text)
-            all_words.extend(words)
-
-    return all_words
+    return []
 
 
 def _re_get_words(text: str) -> list[str]:
@@ -118,10 +107,16 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
 
         important_words[word] = importance
 
-    max_importance = max(important_words.values(), key=lambda x: x)
-    max_importance = max(max_importance, 1)
+    # max_importance = max(important_words.values())
+    # max_importance = max(max_importance, 1)
+    # for word in important_words.keys():
+    #     if important_words[word] == minus_inf:
+    #         important_words[word] = max_importance * 0.4
+
+    importances = sorted(important_words.values(), reverse=True)
+    importances_of_unknown = importances[3] * 0.7
     for word in important_words.keys():
         if important_words[word] == minus_inf:
-            important_words[word] = max_importance * 0.8
+            important_words[word] = importances_of_unknown
 
     return important_words

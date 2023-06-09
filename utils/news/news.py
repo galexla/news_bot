@@ -2,16 +2,12 @@ from typing import Tuple
 
 from utils.misc import redis_cache as cache
 from utils.news import news_api
-from utils.news.important_news import order_news_by_importance
+from utils.news.important_news import get_important_news
 from utils.news.summary_input import get_summary_input
 
-# TODO: add tests
-# TODO: add error handling
-# TODO: add logging?
 
-
-def get_news_semimanufactures(search_query: str, date_from: str,
-                              date_to: str) -> Tuple[int, str, dict[dict]]:
+def get_news_semimanufactures(search_query: str, datetime_from: str,
+                              datetime_to: str) -> Tuple[int, str, dict[dict]]:
     """
     Loads news from API and calculates news count, summary input
     and new ordered by importance and caches them to Redis.
@@ -19,41 +15,36 @@ def get_news_semimanufactures(search_query: str, date_from: str,
 
     :param search_query: search query
     :type search_query: str
-    :param date_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type date_from: str
-    :param date_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type date_to: str
-    :return: news count, summary input, news ordered by importance
+    :param datetime_from: start date in format %Y-%m-%dT%H:%M:%S
+    :type datetime_from: str
+    :param datetime_to: end date in format %Y-%m-%dT%H:%M:%S
+    :type datetime_to: str
+    :return: news count, summary input, important news ordered by importance
     :rtype: Tuple[int, str, dict[dict]]
     """
     text_key = 'description'
 
     news = None
-    prefixes = ('news_count', 'summary_input', 'most_important_news')
-    if not all(cache.exists(cache.get_key(prefix, search_query, date_from, date_to))
-               for prefix in prefixes):
-        news = news_api.get_news(search_query, date_from, date_to)
+    prefixes = ('news_count', 'summary_input', 'important_news')
+    if not cache.all_axists(prefixes, search_query, datetime_from, datetime_to):
+        news = news_api.get_news(search_query, datetime_from, datetime_to)
 
-    key_news_count = cache.get_key(
-        'news_count', search_query, date_from, date_to)
-    cached_get_news_count = cache.cached(
-        key_news_count, date_to)(get_news_count)
-    news_count = cached_get_news_count(news)
+    news_count = cache.get_set(cache.key('news_count',
+                               search_query, datetime_from, datetime_to),
+                               cache.get_ttl(datetime_to),
+                               get_news_count, news)
 
-    key_summary_input = cache.get_key(
-        'summary_input', search_query, date_from, date_to)
-    cached_get_summary_input = cache.cached(
-        key_summary_input, date_to)(get_summary_input)
-    summary_input = cached_get_summary_input(news, text_key)
+    summary_input = cache.get_set(cache.key('summary_input',
+                                  search_query, datetime_from, datetime_to),
+                                  cache.get_ttl(datetime_to),
+                                  get_summary_input, news, text_key)
 
-    key_most_important_news = cache.get_key(
-        'most_important_news', search_query, date_from, date_to)
-    cached_order_news_by_importance = \
-        cache.cached(key_most_important_news, date_to)(
-            order_news_by_importance)
-    news_by_importance = cached_order_news_by_importance(news, text_key)
+    important_news = cache.get_set(cache.key('important_news',
+                                   search_query, datetime_from, datetime_to),
+                                   cache.get_ttl(datetime_to),
+                                   get_important_news, news, text_key)
 
-    return news_count, summary_input, news_by_importance
+    return news_count, summary_input, important_news
 
 
 def get_news_count(news: list[dict]) -> int:

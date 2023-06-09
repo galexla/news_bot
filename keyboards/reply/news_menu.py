@@ -14,10 +14,10 @@ def main(news: Iterable[dict]) -> InlineKeyboardMarkup:
     return menu_
 
 
-def submenu(news_id: str, url: str) -> InlineKeyboardMarkup:
+def news_item(news_id: str, url: str) -> InlineKeyboardMarkup:
     menu_ = InlineKeyboardMarkup()
-    data = f'emotions_{news_id}'
-    menu_.add(InlineKeyboardButton(text='Get emotions', callback_data=data))
+    data = f'summary_{news_id}'
+    menu_.add(InlineKeyboardButton(text='Get summary', callback_data=data))
     menu_.add(InlineKeyboardButton(text='Read article', url=url))
 
     return menu_

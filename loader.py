@@ -5,7 +5,6 @@ import redis
 import telebot
 from telebot import TeleBot, logging
 from telebot.storage import StateRedisStorage
-from textblob import TextBlob
 
 from config_data import config
 
@@ -25,8 +24,3 @@ redis_connection = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT,
                                db=config.REDIS_DB, password=config.REDIS_PASSWORD,
                                decode_responses=True, encoding='utf-8',
                                socket_timeout=None, health_check_interval=10)
-
-# init TextBlob (NLTK included)
-blob = TextBlob('This is a sentence. This is another sentence.')
-blov12345 = blob.noun_phrases
-loguru.logger.info('TextBlob init done')

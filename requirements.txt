@@ -5,4 +5,3 @@ redis==4.5.4
 wordfreq==3.0.3
 debugpy==1.6.7
 python-telegram-bot-calendar==1.0.5
-textblob==0.17.1

@@ -5,7 +5,7 @@ from typing import Iterable, Iterator, Tuple
 from loader import bot
 
 
-def retrieve_user_input(user_id: int, chat_id: int) -> Tuple[str, str, str, str, str]:
+def retrieve_query_info(user_id: int, chat_id: int) -> Tuple[str, str, str, str, str]:
     """
     Gets news search data previously input by user
 
@@ -80,8 +80,8 @@ def get_last_day_of_week(date: date) -> date:
     return date + timedelta(days=6 - date.weekday())
 
 
-def news_to_iterator(news: list[dict], text_keys: Iterable[str],
-                     separator: str = '\n') -> Iterator[str]:
+def news_to_texts(news: list[dict], text_keys: Iterable[str],
+                  separator: str = '\n\n') -> Iterator[str]:
     """
     Converts news to iterator of texts
 
@@ -92,5 +92,31 @@ def news_to_iterator(news: list[dict], text_keys: Iterable[str],
     :rtype: Iterable[str]
     """
     for news_item in news:
-        text = separator.join(news_item.get(key, '') for key in text_keys)
+        text = to_text(news_item, text_keys, separator)
         yield text
+
+
+def to_text(news_item: dict, text_keys: Iterable[str],
+            separator: str = '\n\n') -> str:
+    return separator.join(news_item.get(key, '') for key in text_keys)
+
+
+def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
+                            separator: str = '\n\n') -> dict[str, str]:
+    """
+    Converts important news to iterator of texts
+
+    :param news: news
+    :type news: dict[dict]
+    :param text_keys: text keys
+    :type text_keys: Iterable[str]
+    :rtype: dict[str, str]
+    :return: result in format {news_id: text, ...}
+    """
+    result = {}
+    for news_id, item in news.items():
+        news_item = item['news']
+        text = to_text(news_item, text_keys, separator)
+        result[news_id] = text
+
+    return result

@@ -4,25 +4,26 @@ from config_data import config
 from utils.misc import api_request, get_json_value
 
 
-def get_summary(summary_input: str, n_characters: int = 500) -> Optional[str]:
+def get_summary(text: str, n_characters: int = 500) -> Optional[list]:
     """
     Gets text summary using Text-analysis12 API
 
     :param text: text
     :type text: str
-    :param n_characters: number of characters in summary
+    :param n_characters: maximum size of the summary
     :type n_characters: int
-    :return: text summary
-    :rtype: Optional[str]
+    :return: sentences of the summary
+    :rtype: Optional[list]
     """
-    if len(summary_input) <= n_characters:
-        return summary_input
+    n_characters = max(0, n_characters)
+    if len(text) <= n_characters:
+        return text
 
-    percent = round(n_characters / len(summary_input) * 100, 2)
-    return _summary_api_request(summary_input, percent)
+    percent = round(n_characters / len(text) * 100, 3)
+    return get_summary_percent(text, percent)
 
 
-def _summary_api_request(summary_input: str, percent: float) -> Optional[dict]:
+def get_summary_percent(text: str, percent: float) -> Optional[list]:
     """
     Make API request to Text-analysis12 API to get text summary
 
@@ -32,10 +33,11 @@ def _summary_api_request(summary_input: str, percent: float) -> Optional[dict]:
     :type percent: float
     :raise requests.RequestException: raised if the request fails
     :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
-    :return: text summary
-    :rtype: Optional[str]
+    :return: sentences of the summary
+    :rtype: Optional[list]
     """
     percent = min(100, percent)
+    percent = max(0, percent)
 
     url = 'https://text-analysis12.p.rapidapi.com/summarize-text/api/v1.1'
 
@@ -48,8 +50,10 @@ def _summary_api_request(summary_input: str, percent: float) -> Optional[dict]:
     request = {
         'language': 'english',
         'summary_percent': percent,
-        'text': summary_input
+        'text': text
     }
 
     response = api_request('POST', url, headers, request)
-    return get_json_value(response, ['summary'])
+    sentences = get_json_value(response, ['sentences'])
+
+    return sentences

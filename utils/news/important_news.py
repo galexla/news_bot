@@ -1,12 +1,12 @@
 from typing import Iterable
 
 from utils.news.important_words import get_important_words, get_words
-from utils.news.utils import news_to_iterator
+from utils.news.utils import news_to_texts
 
 
-def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> dict[dict]:
+def get_important_news(news: list[dict], text_keys: str | Iterable) -> dict[dict]:
     """
-    Returns news ordered by descending importance in format:
+    Returns most important news ordered by descending importance in format:
     {id: {importance: float, news: dict}, ...}
 
     :param news: news
@@ -18,7 +18,7 @@ def order_news_by_importance(news: list[dict], text_keys: str | Iterable) -> dic
         return []
 
     important_news = {}
-    news_texts = news_to_iterator(news, text_keys)
+    news_texts = news_to_texts(news, text_keys)
     important_words = get_important_words(news_texts)
 
     for news_item in news:

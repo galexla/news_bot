@@ -1,43 +1,14 @@
 import datetime
 import functools
 import json
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 from loguru import logger
 
 from loader import redis_connection
 
-# TODO: remove these comments
-# prefixes: summary, summary_input, most_important_news, news_count
 
-
-def cached(key: str, date_time: str) -> Callable:
-    """
-    Parametrized decorator for caching function result in Redis
-
-    :param key: cache key
-    :type key: str
-    :param date_time: date in format %Y-%m-%dT%H:%M:%S
-    :type date_time: str
-    """
-    def decorator(func) -> Callable:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
-            result = None
-            if redis_connection.exists(key):
-                result = get(key)
-            else:
-                result = func(*args, **kwargs)
-                ttl = _get_ttl(date_time)
-                set(key, result, ex=ttl)
-
-            logger.debug(f'redis_cache: got {key}: {_get_str_for_log(result)}')
-
-            return result
-
-        return wrapper
-
-    return decorator
+# prefixes: summary, summary_input, important_news, news_count
 
 
 def exists(key: str) -> bool:
@@ -52,6 +23,24 @@ def exists(key: str) -> bool:
     return redis_connection.exists(key)
 
 
+def all_axists(prefixes: Iterable[str], search_query: str,
+               datetime_from: str, datetime_to: str) -> bool:
+    return all(exists(key(prefix, search_query, datetime_from, datetime_to))
+               for prefix in prefixes)
+
+
+def key(*key_parts) -> str:
+    """
+    Creates key by concatenating key parts with ':' separator
+
+    :param key_parts: key parts
+    :type key_parts: Any
+    :return: Redis key
+    :rtype: str
+    """
+    return ':'.join(str(part) for part in key_parts)
+
+
 def _get_str_for_log(value: Any) -> str:
     if isinstance(value, (dict, list)):
         return f'count={len(value)}'
@@ -60,7 +49,7 @@ def _get_str_for_log(value: Any) -> str:
     return value
 
 
-def get(key: str) -> Any:
+def get(key) -> Any:
     """
     Gets value from Redis
 
@@ -91,16 +80,39 @@ def set(key: str, value: Any, ex: int = None) -> None:
     redis_connection.set(key, value, ex=ex)
 
 
-def get_key(*args) -> str:
-    """
-    Gets Redis key by concatenating key parts with ':' separator
+def get_by_params(prefix: str, search_query: str,
+                  datetime_from: str, datetime_to: str) -> Any:
+    key = key(prefix, search_query, datetime_from, datetime_to)
+    return get(key)
 
-    :param args: key parts
-    :type args: Any
-    :return: Redis key
-    :rtype: str
+
+def get_set(key: str, ttl: int, func: callable, *args, **kwargs) -> Any:
     """
-    return ':'.join(str(arg) for arg in args)
+    Gets func result if cached. Or caclculates and caches it with func and its *args
+
+    :param key: key
+    :type key: str
+    :param ttl: TTL in seconds
+    :type ttl: int
+    :param func: function for caclculating results if it is not cached
+    :type func: callable
+    :param *args: func arguments
+    :type *args: Any
+    :param *kwargs: func arguments
+    :type *kwargs: Any
+    :rtype: Any
+    :return: result
+    """
+    result = None
+    if redis_connection.exists(key):
+        result = get(key)
+    else:
+        result = func(*args, **kwargs)
+        set(key, result, ex=ttl)
+
+    logger.debug(f'redis_cache: got {key}: {_get_str_for_log(result)}')
+
+    return result
 
 
 def _cast_type(value: Any) -> Any:
@@ -133,7 +145,7 @@ def _cast_type(value: Any) -> Any:
     return value
 
 
-def _get_ttl(date_time: str) -> int:
+def get_ttl(date_time: str) -> int:
     """
     Gets TTL in seconds for Redis key
 

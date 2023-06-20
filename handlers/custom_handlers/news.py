@@ -6,6 +6,7 @@ from telegram_bot_calendar import LSTEP, DetailedTelegramCalendar
 from keyboards.reply import news_menu
 from loader import bot
 from states.news_state import NewsState
+from utils import history
 from utils.misc import redis_cache as cache
 from utils.news import utils as news_utils
 from utils.news.news import get_news_semimanufactures
@@ -50,6 +51,27 @@ def bot_enter_search_query(message: Message) -> None:
         _handle_invalid_input(message, 'Search query cannot be empty.')
 
 
+def _handle_invalid_input(message: Message, error_message: str) -> None:
+    """
+    Handles invalid input
+
+    :param message: incoming message
+    :type message: Message
+    :param error_message: error message
+    :type error_message: str
+    :rtype: None
+    """
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        if data.get('invalid_count', 0) >= 2:
+            # if invalid input was entered 3 times, start over
+            bot.delete_state(message.from_user.id, message.chat.id)
+            text = 'You entered invalid data 3 times. You can start over by entering /news'
+            bot.reply_to(message, text)
+        else:
+            data['invalid_count'] += 1
+            bot.reply_to(message, error_message)
+
+
 def _display_calendar(user_id: int) -> None:
     """
     Displays calendar
@@ -64,34 +86,53 @@ def _display_calendar(user_id: int) -> None:
 
 @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
 def bot_work_with_calendar(callback_query: CallbackQuery) -> None:
-    """Handles work with visual calendar"""
+    """
+    Handles work with a visual calendar
+
+    :param callback_query: callback query
+    :type callback_query: CallbackQuery
+    :rtype: None
+    """
     text_msg = 'Select week (by pressing on any date in the week).'
     message = callback_query.message
+    # user_id = message.from_user.id
+    chat_id = message.chat.id
     result, key, step = DetailedTelegramCalendar().process(callback_query.data)
     if not result and key:
         bot.edit_message_text(f"{text_msg}\nSelect {LSTEP[step]}",
-                              message.chat.id,
-                              message.message_id,
-                              reply_markup=key)
+                              chat_id, message.message_id, reply_markup=key)
     elif result:
-        bot.edit_message_text(f"You selected {result}",
-                              message.chat.id,
-                              message.message_id)
+        # date selected
+        first_day = news_utils.get_first_day_of_week(result)
+        last_day = news_utils.get_last_day_of_week(result)
 
-        with bot.retrieve_data(message.chat.id, message.chat.id) as data:
-            first_day = news_utils.get_first_day_of_week(result)
-            last_day = news_utils.get_last_day_of_week(result)
+        date_from = first_day.strftime('%d.%m.%y')
+        date_to = last_day.strftime('%d.%m.%y')
+
+        bot.edit_message_text(f"You selected {date_from} - {date_to} period",
+                              chat_id, message.message_id)
+
+        with bot.retrieve_data(chat_id, chat_id) as data:
             data['date_from'] = first_day.strftime('%Y-%m-%d')
             data['date_to'] = last_day.strftime('%Y-%m-%d')
 
-        bot.set_state(message.chat.id, NewsState.getting_news)
+        bot.set_state(chat_id, NewsState.getting_news)
         bot.send_message(
-            message.chat.id, 'Getting news... It can take up to 6 seconds.')
+            chat_id, 'Getting news... It can take up to 6 seconds.')
 
-        _get_results(message.chat.id, message.chat.id)
+        search_query, datetime_from, datetime_to, date_from, date_to = \
+            news_utils.retrieve_query_info(chat_id, chat_id)
+
+        history.add(user_id=chat_id, query=search_query,
+                    date_from=first_day, date_to=last_day)
+
+        _get_results(chat_id, chat_id, search_query, datetime_from,
+                     datetime_to, date_from, date_to)
 
 
-def _get_results(chat_id: int, user_id: int) -> None:
+def _get_results(chat_id: int, user_id: int, search_query: str,
+                 datetime_from: str, datetime_to: str,
+                 date_from: str, date_to: str) -> None:
     """
     Gets and displays news count, summary and top news
 
@@ -102,8 +143,6 @@ def _get_results(chat_id: int, user_id: int) -> None:
     :rtype: None
     """
     try:
-        search_query, datetime_from, datetime_to, date_from, date_to = \
-            news_utils.retrieve_query_info(user_id, chat_id)
         news_count, summary_input, important_news = get_news_semimanufactures(
             search_query, datetime_from, datetime_to)
 
@@ -119,6 +158,7 @@ def _get_results(chat_id: int, user_id: int) -> None:
         if summary and top_news:
             bot.set_state(user_id, NewsState.got_news, chat_id)
             _display_summary_and_top_news(chat_id, summary, top_news)
+            bot.delete_state(user_id, chat_id)
         else:
             bot.delete_state(user_id, chat_id)
             logger.error(
@@ -139,7 +179,7 @@ def _get_summary_and_top_news(search_query: str, datetime_from: str, datetime_to
                               summary_input: str, important_news: dict) -> tuple[list, list]:
     """Gets summary and top news and saves in cache if needed"""
     summary = cache.get_set(cache.key('summary', search_query,
-                            datetime_from, datetime_to),
+                                      datetime_from, datetime_to),
                             cache.get_ttl(datetime_to),
                             get_summary, summary_input)
 
@@ -161,24 +201,3 @@ def _display_summary_and_top_news(chat_id: str, summary: list[str],
     'its summary or to read the full article.'
     bot.send_message(
         chat_id, text_msg, reply_markup=news_menu.main(top_news))
-
-
-def _handle_invalid_input(message: Message, error_message: str) -> None:
-    """
-    Handles invalid input
-
-    :param message: incoming message
-    :type message: Message
-    :param error_message: error message
-    :type error_message: str
-    :rtype: None
-    """
-    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-        if data.get('invalid_count', 0) >= 2:
-            # if invalid input was entered 3 times, start over
-            bot.delete_state(message.from_user.id, message.chat.id)
-            text = 'You entered invalid data 3 times. You can start over by entering /news'
-            bot.reply_to(message, text)
-        else:
-            data['invalid_count'] += 1
-            bot.reply_to(message, error_message)

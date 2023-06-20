@@ -6,7 +6,7 @@ from loader import bot
 @bot.message_handler(state=None)
 def bot_echo(message: Message) -> None:
     """
-    Handles all messages that have no other handlers and which state is None
+    Handles all messages that have no other handler and which state is None
 
     :param message: incoming message
     :type message: Message

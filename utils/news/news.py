@@ -29,20 +29,20 @@ def get_news_semimanufactures(search_query: str, datetime_from: str,
     if not cache.all_axists(prefixes, search_query, datetime_from, datetime_to):
         news = news_api.get_news(search_query, datetime_from, datetime_to)
 
-    news_count = cache.get_set(cache.key('news_count',
-                               search_query, datetime_from, datetime_to),
-                               cache.get_ttl(datetime_to),
-                               get_news_count, news)
+    news_count = cache.get_set(
+        cache.key('news_count', search_query, datetime_from, datetime_to),
+        cache.get_ttl(datetime_to),
+        get_news_count, news)
 
-    summary_input = cache.get_set(cache.key('summary_input',
-                                  search_query, datetime_from, datetime_to),
-                                  cache.get_ttl(datetime_to),
-                                  get_summary_input, news, text_key)
+    summary_input = cache.get_set(
+        cache.key('summary_input', search_query, datetime_from, datetime_to),
+        cache.get_ttl(datetime_to),
+        get_summary_input, news, text_key)
 
-    important_news = cache.get_set(cache.key('important_news',
-                                   search_query, datetime_from, datetime_to),
-                                   cache.get_ttl(datetime_to),
-                                   get_important_news, news, text_key)
+    important_news = cache.get_set(
+        cache.key('important_news', search_query, datetime_from, datetime_to),
+        cache.get_ttl(datetime_to),
+        get_important_news, news, text_key)
 
     return news_count, summary_input, important_news
 

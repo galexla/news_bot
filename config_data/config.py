@@ -20,10 +20,13 @@ POSTGRES_PORT = os.getenv('POSTGRES_PORT')
 POSTGRES_DB = os.getenv('POSTGRES_DB')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+DROP_TABLES = os.getenv('DROP_TABLES', 'False').lower() == 'true'
 
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 DEFAULT_COMMANDS = (
+    ('start', 'Start bot'),
     ('help', 'Display help'),
-    ('news', 'Get news'),
+    ('news', 'Get news in 1 week: summary and top 5 news'),
+    ('history', 'Get search queries history'),
 )

@@ -1,7 +1,7 @@
 from typing import Iterable
 
 from utils.news.important_words import get_important_words, get_words
-from utils.news.utils import news_to_texts
+from utils.news.utils import news_to_texts, to_text
 
 
 def get_important_news(news: list[dict], text_keys: str | Iterable) -> dict[dict]:
@@ -17,13 +17,17 @@ def get_important_news(news: list[dict], text_keys: str | Iterable) -> dict[dict
     if not news or not text_keys:
         return []
 
+    if isinstance(text_keys, str):
+        text_keys = [text_keys]
+
     important_news = {}
     news_texts = news_to_texts(news, text_keys)
     important_words = get_important_words(news_texts)
 
     for news_item in news:
         important_news[news_item['id']] = {'importance': 0, 'news': news_item}
-        all_words = get_words(news_item, text_keys)
+        text = to_text(news_item, text_keys)
+        all_words = get_words(text)
         for word, importance in important_words.items():
             if word in all_words:
                 important_news[news_item['id']]['importance'] += importance

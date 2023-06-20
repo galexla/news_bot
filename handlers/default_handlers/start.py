@@ -12,4 +12,6 @@ def bot_start(message: Message):
     :type message: Message
     :rtype: None
     """
-    bot.reply_to(message, f'Привет, {message.from_user.full_name}!')
+    user_id, chat_id = message.from_user.id, message.chat.id
+    bot.delete_state(user_id, chat_id)
+    bot.reply_to(message, f'Hello, {message.from_user.full_name}!')

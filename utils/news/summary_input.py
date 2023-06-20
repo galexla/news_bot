@@ -14,12 +14,36 @@ def get_summary_input(news: list[dict], key: str) -> str:
     :return: text for summary
     :rtype: list[dict]
     """
+    news = _get_unique_news(news)
     average_length = _get_average_length(news, key)
     news_count = _get_news_count_for_summary(news, average_length)
     news_for_summary = _get_news_for_summary(news, news_count)
     text_for_summary = _join_news(news_for_summary, key)
 
     return text_for_summary
+
+
+def _get_unique_news(news: list[dict]) -> list[dict]:
+    """
+    Returns a copy of news where no duplicates of value of key present
+
+    :param news: news
+    :type news: list[dict]
+    :param key: field to get text from
+    :type key: str
+    :return: news with no duplicates
+    :rtype: list[dict]
+    """
+    result = []
+    added_news = set()
+    for item in news:
+        item_text = item['body'].lower().replace(' ', '').replace('\t', '')
+        item_text = item_text.replace('\n', '').replace('\r', '')
+        if item_text not in added_news:
+            added_news.add(item_text)
+            result.append(item)
+
+    return result
 
 
 def _get_average_length(news: list, key: str) -> int:

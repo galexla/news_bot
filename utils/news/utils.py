@@ -123,8 +123,8 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
 
 
 def date_from_to_str(date_from: date) -> str:
-    datetime.strftime(date_from, '%Y-%m-%d 00:00:00')
+    return date_from.strftime('%Y-%m-%dT00:00:00')
 
 
 def date_to_to_str(date_to: date) -> str:
-    datetime.strftime(date_to, '%Y-%m-%d 23:59:59')
+    return date_to.strftime('%Y-%m-%dT23:59:59')

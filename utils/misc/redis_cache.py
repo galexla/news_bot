@@ -1,7 +1,6 @@
 import datetime
-import functools
 import json
-from typing import Any, Callable, Iterable
+from typing import Any, Iterable
 
 from loguru import logger
 

@@ -1,4 +1,3 @@
-# from config_data import config
 from database.connection.init_db import db
 from database.models.SearchHistory import SearchHistory
 

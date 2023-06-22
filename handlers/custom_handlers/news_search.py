@@ -100,7 +100,7 @@ def bot_work_with_calendar(call: CallbackQuery) -> None:
     logger.debug('bot_work_with_calendar()')
 
     message = call.message
-    chat_id, user_id = message.chat.id, message.from_user.id
+    chat_id, user_id = message.chat.id, call.from_user.id
     result, key, step = DetailedTelegramCalendar().process(call.data)
     if not result and key:
         text_msg = f'*Select week by pressing on any date.\nSelect {LSTEP[step]}*'

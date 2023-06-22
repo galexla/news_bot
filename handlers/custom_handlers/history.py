@@ -39,7 +39,7 @@ def bot_history_item(call: CallbackQuery) -> None:
     id = int(call.data[8:])
     logger.debug(f'bot_history_item() called with id: {id}')
 
-    chat_id, user_id = call.message.chat.id, call.message.from_user.id
+    chat_id, user_id = call.message.chat.id, call.from_user.id
     bot.delete_state(user_id, chat_id)
 
     item = SearchHistory.get_by_id(id)

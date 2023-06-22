@@ -22,11 +22,11 @@ def bot_click_news_item(call: CallbackQuery):
     logger.debug('bot_click_news_item()')
 
     news_id = re.search(r'^news_(\d+)$', call.data).group(1).strip()
-    chat_id, user_id = call.message.chat.id, call.message.from_user.id
+    chat_id, user_id = call.message.chat.id, call.from_user.id
 
     try:
-        title, url, _, _ = top_news.get_cached_top_news(news_id)
-
+        news_item, _ = top_news.get_cached_top_news(news_id)
+        title, url = news_item['title'], news_item['url']
         bot.send_message(chat_id, f'*{title}*',
                          reply_markup=news_menu.news_item(news_id, url),
                          parse_mode='Markdown')
@@ -52,15 +52,16 @@ def bot_news_summary(call: CallbackQuery):
     news_id = re.search(r'^summary_(\d+)$', call.data).group(1).strip()
     chat_id = call.message.chat.id
 
-    title, url, body, ttl = top_news.get_cached_top_news(news_id)
-    if not title or not url:
+    news_item, ttl = top_news.get_cached_top_news(news_id)
+    if not news_item:
         logger.error(f'Unable to get summary for news id "{news_id}"')
         bot.send_message(chat_id, '*Unable to get news summary.*',
                          parse_mode='Markdown')
     else:
         summary = cache.get_set(cache.key('article_summary', news_id), ttl,
-                                get_summary, body)
+                                get_summary, news_item['body'])
         summary = ' '.join(summary)
 
+        title = news_item['title']
         text_msg = f'*Summary of article "{title}"*:\n{summary}'
         bot.send_message(chat_id, text_msg, parse_mode='Markdown')

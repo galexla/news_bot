@@ -1,3 +1,4 @@
+from loguru import logger
 from telebot.types import Message
 
 from loader import bot
@@ -12,6 +13,8 @@ def bot_echo(message: Message) -> None:
     :type message: Message
     :rtype: None
     """
+    logger.debug('bot_echo()')
+
     bot.reply_to(
         message, 'Echo without state or filter.\n' f'Message: {message.text}'
     )

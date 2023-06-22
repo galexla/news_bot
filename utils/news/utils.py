@@ -1,29 +1,7 @@
+import functools
 import re
 from datetime import date, datetime, timedelta
-from typing import Iterable, Iterator, Tuple
-
-from loader import bot
-
-
-def retrieve_query_info(user_id: int, chat_id: int) -> Tuple[str, str, str, str, str]:
-    """
-    Gets news search data previously input by user
-
-    :param user_id: user id
-    :type user_id: int
-    :param chat_id: chat id
-    :type chat_id: int
-    :return: search query, start datetime, end datetime, start date, end date
-    :rtype: Tuple[str, str, str, str, str]
-    """
-    with bot.retrieve_data(user_id, chat_id) as data:
-        search_query = data.get('search_query')
-        date_from = data.get('date_from')
-        date_to = data.get('date_to')
-        datetime_from = date_from + 'T00:00:00' if date_from else None
-        datetime_to = date_to + 'T23:59:59' if date_to else None
-
-    return search_query, datetime_from, datetime_to, date_from, date_to
+from typing import Iterable, Iterator
 
 
 def is_datetime_valid(date: str) -> bool:
@@ -122,9 +100,11 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
     return result
 
 
+@functools.lru_cache(maxsize=128)
 def date_from_to_str(date_from: date) -> str:
     return date_from.strftime('%Y-%m-%dT00:00:00')
 
 
+@functools.lru_cache(maxsize=128)
 def date_to_to_str(date_to: date) -> str:
     return date_to.strftime('%Y-%m-%dT23:59:59')

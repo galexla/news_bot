@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Tuple
 
 from utils.misc import redis_cache as cache
@@ -6,8 +7,8 @@ from utils.news.important_news import get_important_news
 from utils.news.summary_input import get_summary_input
 
 
-def get_news_semimanufactures(search_query: str, datetime_from: str,
-                              datetime_to: str) -> Tuple[int, str, dict[dict]]:
+def get_news_semimanufactures(search_query: str, date_from: date,
+                              date_to: date) -> Tuple[int, str, dict[dict]]:
     """
     Loads news from API and calculates news count, summary input
     and new ordered by importance and caches them to Redis.
@@ -15,10 +16,10 @@ def get_news_semimanufactures(search_query: str, datetime_from: str,
 
     :param search_query: search query
     :type search_query: str
-    :param datetime_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_from: str
-    :param datetime_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_to: str
+    :param date_from: start date
+    :type date_from: date
+    :param date_to: end date
+    :type date_to: date
     :return: news count, summary input, important news ordered by importance
     :rtype: Tuple[int, str, dict[dict]]
     """
@@ -26,22 +27,22 @@ def get_news_semimanufactures(search_query: str, datetime_from: str,
 
     news = None
     prefixes = ('news_count', 'summary_input', 'important_news')
-    if not cache.all_axists(prefixes, search_query, datetime_from, datetime_to):
-        news = news_api.get_news(search_query, datetime_from, datetime_to)
+    if not cache.all_axists(prefixes, search_query, date_from, date_to):
+        news = news_api.get_news(search_query, date_from, date_to)
 
     news_count = cache.get_set(
-        cache.key('news_count', search_query, datetime_from, datetime_to),
-        cache.get_ttl(datetime_to),
+        cache.key_query('news_count', search_query, date_from, date_to),
+        cache.get_ttl(date_to),
         get_news_count, news)
 
     summary_input = cache.get_set(
-        cache.key('summary_input', search_query, datetime_from, datetime_to),
-        cache.get_ttl(datetime_to),
+        cache.key_query('summary_input', search_query, date_from, date_to),
+        cache.get_ttl(date_to),
         get_summary_input, news, text_key)
 
     important_news = cache.get_set(
-        cache.key('important_news', search_query, datetime_from, datetime_to),
-        cache.get_ttl(datetime_to),
+        cache.key_query('important_news', search_query, date_from, date_to),
+        cache.get_ttl(date_to),
         get_important_news, news, text_key)
 
     return news_count, summary_input, important_news

@@ -5,13 +5,12 @@ from telebot.types import CallbackQuery
 
 from keyboards.reply import news_menu
 from loader import bot
-from states.news_state import NewsState
+from utils import top_news
 from utils.misc import redis_cache as cache
-from utils.misc.user_info import retrieve_user_info
 from utils.summary import get_summary
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('news_'), state=NewsState.got_news)
+@bot.callback_query_handler(func=lambda call: call.data.startswith('news_'), state=None)
 def bot_click_news_item(call: CallbackQuery):
     """
     Handles news item click
@@ -20,31 +19,26 @@ def bot_click_news_item(call: CallbackQuery):
     :type call: CallbackQuery
     :rtype: None
     """
-    logger.debug('bot_news_item() called')
-    chat_id, user_id, search_query, datetime_from, datetime_to = \
-        retrieve_user_info(call)
+    logger.debug('bot_click_news_item()')
 
     news_id = re.search(r'^news_(\d+)$', call.data).group(1).strip()
+    chat_id, user_id = call.message.chat.id, call.message.from_user.id
 
     try:
-        important_news = cache.get(cache.key(
-            'important_news', search_query, datetime_from, datetime_to))
+        title, url, _, _ = top_news.get_cached_top_news(news_id)
 
-        news_item = important_news[news_id]['news']
-        title = news_item['title']
-        url = news_item['url']
-
-        bot.send_message(
-            chat_id, title, reply_markup=news_menu.news_item(news_id, url))
-    except ValueError as exception:
+        bot.send_message(chat_id, f'*{title}*',
+                         reply_markup=news_menu.news_item(news_id, url),
+                         parse_mode='Markdown')
+    except ValueError:
         logger.error(
             f'Error occurred while fetching news item: {news_id} for user: '
-            f'{user_id}, with search parameters: "{search_query}", '
-            f'{datetime_from}, {datetime_to}')
-        bot.send_message(chat_id, 'Some error occurred.')
+            f'{user_id} in chat: {chat_id}.')
+        bot.send_message(chat_id, '*Some error occurred.*',
+                         parse_mode='Markdown')
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('summary_'), state=NewsState.got_news)
+@bot.callback_query_handler(func=lambda call: call.data.startswith('summary_'), state=None)
 def bot_news_summary(call: CallbackQuery):
     """
     Gets summary of a news article
@@ -53,29 +47,20 @@ def bot_news_summary(call: CallbackQuery):
     :type call: CallbackQuery
     :rtype: None
     """
-    logger.debug('bot_news_summary() called')
-
-    chat_id, _, search_query, datetime_from, datetime_to = \
-        retrieve_user_info(call)
+    logger.debug('bot_news_summary()')
 
     news_id = re.search(r'^summary_(\d+)$', call.data).group(1).strip()
+    chat_id = call.message.chat.id
 
-    important_news = cache.get(cache.key(
-        'important_news', search_query, datetime_from, datetime_to))
+    title, url, body, ttl = top_news.get_cached_top_news(news_id)
+    if not title or not url:
+        logger.error(f'Unable to get summary for news id "{news_id}"')
+        bot.send_message(chat_id, '*Unable to get news summary.*',
+                         parse_mode='Markdown')
+    else:
+        summary = cache.get_set(cache.key('article_summary', news_id), ttl,
+                                get_summary, body)
+        summary = ' '.join(summary)
 
-    if not important_news:
-        logger.error(f'Unable to get top news for query: "{search_query}", '
-                     f'{datetime_from} - {datetime_to}.')
-        bot.send_message(chat_id, 'Unable to get news summary.')
-        return
-
-    news_item = important_news[news_id]['news']
-
-    summary = cache.get_set(cache.key('article_summary', news_id),
-                            cache.get_ttl(datetime_to),
-                            get_summary, news_item['body'])
-    summary = ' '.join(summary)
-
-    title = news_item['title']
-    text_msg = f'Summary of article "{title}": \n{summary}'
-    bot.send_message(chat_id, text_msg)
+        text_msg = f'*Summary of article "{title}"*:\n{summary}'
+        bot.send_message(chat_id, text_msg, parse_mode='Markdown')

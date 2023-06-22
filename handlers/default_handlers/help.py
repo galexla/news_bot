@@ -1,3 +1,4 @@
+from loguru import logger
 from telebot.types import Message
 
 from config_data.config import DEFAULT_COMMANDS
@@ -13,5 +14,7 @@ def bot_help(message: Message):
     :type message: Message
     :rtype: None
     """
+    logger.debug('bot_help()')
+
     text = [f'/{command} - {desk}' for command, desk in DEFAULT_COMMANDS]
     bot.reply_to(message, '\n'.join(text))

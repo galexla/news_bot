@@ -1,11 +1,11 @@
-import datetime
 import json
+from datetime import date, datetime
 from typing import Any, Iterable
 
 from loguru import logger
 
 from loader import redis_connection
-
+from utils.news.utils import date_from_to_str, date_to_to_str
 
 # prefixes: summary, summary_input, important_news, news_count
 
@@ -23,8 +23,8 @@ def exists(key: str) -> bool:
 
 
 def all_axists(prefixes: Iterable[str], search_query: str,
-               datetime_from: str, datetime_to: str) -> bool:
-    return all(exists(key(prefix, search_query, datetime_from, datetime_to))
+               date_from: date, date_to: date) -> bool:
+    return all(exists(key_query(prefix, search_query, date_from, date_to))
                for prefix in prefixes)
 
 
@@ -38,6 +38,27 @@ def key(*key_parts) -> str:
     :rtype: str
     """
     return ':'.join(str(part) for part in key_parts)
+
+
+def key_query(prefix: str, search_query: str, date_from: date,
+              date_to: date) -> str:
+    """
+    Creates key for query
+
+    :param prefix: prefix
+    :type prefix: str
+    :param search_query: search query
+    :type search_query: str
+    :param date_from: date from
+    :type date_from: date
+    :param date_to: date to
+    :type date_to: date
+    :return: Redis key
+    :rtype: str
+    """
+    date_from = date_from_to_str(date_from)
+    date_to = date_to_to_str(date_to)
+    return key(prefix, search_query, date_from, date_to)
 
 
 def _get_str_for_log(value: Any) -> str:
@@ -58,7 +79,21 @@ def get(key) -> Any:
     :rtype: Any
     """
     value = redis_connection.get(key)
+    if value is None:
+        logger.info(f'Key {key} not found in Redis')
     return _cast_type(value)
+
+
+def ttl(key: str) -> int:
+    """
+    Gets TTL of key
+
+    :param key: key
+    :type key: str
+    :return: TTL
+    :rtype: int
+    """
+    return redis_connection.ttl(key)
 
 
 def set(key: str, value: Any, ex: int = None) -> None:
@@ -77,12 +112,6 @@ def set(key: str, value: Any, ex: int = None) -> None:
     if isinstance(value, (dict, list)):
         value = json.dumps(value)
     redis_connection.set(key, value, ex=ex)
-
-
-def get_by_params(prefix: str, search_query: str,
-                  datetime_from: str, datetime_to: str) -> Any:
-    key = key(prefix, search_query, datetime_from, datetime_to)
-    return get(key)
 
 
 def get_set(key: str, ttl: int, func: callable, *args, **kwargs) -> Any:
@@ -144,19 +173,18 @@ def _cast_type(value: Any) -> Any:
     return value
 
 
-def get_ttl(date_time: str) -> int:
+def get_ttl(date_to: date) -> int:
     """
-    Gets TTL in seconds for Redis key
+    Gets TTL in seconds for search query
 
-    :param date_time: date of the cached item in format %Y-%m-%dT%H:%M:%S
-    :type date_time: str
+    :param date_to: date to of search query
+    :type date_to: date
     :return: TTL
     :rtype: int
     """
-    date_time = datetime.datetime.strptime(date_time, '%Y-%m-%dT%H:%M:%S')
-    timestamp = datetime.datetime.timestamp(date_time)
-    now_timestamp = datetime.datetime.utcnow().timestamp()
+    date_to = datetime.combine(date_to, datetime.max.time())
+    now = datetime.utcnow().timestamp()
 
-    if now_timestamp - timestamp >= 3600 * 3:
-        return 3600 * 24 * 90
+    if now - date_to.timestamp() >= 3600 * 24 * 2:
+        return 3600 * 24 * 7
     return 3600 * 3

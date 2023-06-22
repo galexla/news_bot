@@ -7,10 +7,9 @@ from keyboards.reply import news_menu
 from loader import bot
 from states.news_state import NewsState
 from utils.misc import redis_cache as cache
-from utils.news import utils as news_utils
 from utils.news.news import get_news_semimanufactures
 from utils.summary import get_summary
-from utils.top_news import get_top_news
+from utils.top_news import cache_top_news, get_top_news
 
 
 def get_results(chat_id: int, user_id: int, search_query: str,
@@ -30,8 +29,6 @@ def get_results(chat_id: int, user_id: int, search_query: str,
     :type date_to: date
     :rtype: None
     """
-    datetime_from = news_utils.date_from_to_str(date_from)
-    datetime_to = news_utils.date_to_to_str(date_to)
     date_from_str = date_from.strftime('%d.%m.%Y')
     date_to_str = date_to.strftime('%d.%m.%Y')
 
@@ -41,14 +38,14 @@ def get_results(chat_id: int, user_id: int, search_query: str,
 
     try:
         news_count, summary_input, important_news = get_news_semimanufactures(
-            search_query, datetime_from, datetime_to)
+            search_query, date_from, date_to)
 
         text_msg = f'*Got {news_count} news. ' \
             f'Generating summary and top news...*'
         bot.send_message(chat_id, text_msg, parse_mode='Markdown')
 
         summary, top_news = _get_summary_and_top_news(
-            search_query, datetime_from, datetime_to,
+            search_query, date_from, date_to,
             summary_input, important_news)
 
         if summary and top_news:
@@ -59,7 +56,7 @@ def get_results(chat_id: int, user_id: int, search_query: str,
             bot.delete_state(user_id, chat_id)
             logger.error(
                 f'Unable to get summary & top news for query: '
-                f'"{search_query}", period: {datetime_from} - {datetime_to}.')
+                f'"{search_query}", period: {date_from} - {date_to}.')
             bot.send_message(chat_id, '*Unable to get top news.*',
                              parse_mode='Markdown')
     except (requests.RequestException, requests.exceptions.JSONDecodeError,
@@ -74,18 +71,20 @@ def get_results(chat_id: int, user_id: int, search_query: str,
                              parse_mode='Markdown')
 
 
-def _get_summary_and_top_news(search_query: str, datetime_from: str, datetime_to: str,
+def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
                               summary_input: str, important_news: dict) -> tuple[list, list]:
     """Gets summary and top news and saves in cache if needed"""
-    summary = cache.get_set(cache.key('summary', search_query,
-                                      datetime_from, datetime_to),
-                            cache.get_ttl(datetime_to),
-                            get_summary, summary_input)
+    summary = cache.get_set(
+        cache.key_query('summary', search_query, date_from, date_to),
+        cache.get_ttl(date_to),
+        get_summary, summary_input)
 
-    top_news = cache.get_set(cache.key('top_news', search_query,
-                                       datetime_from, datetime_to),
-                             cache.get_ttl(datetime_to),
-                             get_top_news, summary, important_news)
+    top_news = cache.get_set(
+        cache.key_query('top_news', search_query, date_from, date_to),
+        cache.get_ttl(date_to),
+        get_top_news, summary, important_news)
+
+    cache_top_news(top_news, date_to)
 
     return summary, top_news
 
@@ -93,7 +92,7 @@ def _get_summary_and_top_news(search_query: str, datetime_from: str, datetime_to
 def _display_summary_and_top_news(chat_id: str, summary: list[str],
                                   top_news: list[dict]) -> None:
     """Displays summary and top news"""
-    text_msg = '*Here is summary of news for the chosen period.*\n'
+    text_msg = '*Here is summary of news for the chosen period:*\n'
     text_msg = text_msg + ' '.join(summary)
     bot.send_message(chat_id, text_msg, parse_mode='Markdown')
 

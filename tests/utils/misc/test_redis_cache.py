@@ -6,7 +6,7 @@ from unittest.mock import patch
 def test_get_ttl():
     datetime_to = '2023-04-09T15:11:05'
     ttl = get_ttl(datetime_to)
-    assert ttl == 3600 * 24 * 90
+    assert ttl == 3600 * 24 * 7
 
     datetime_to = datetime.datetime.utcnow()
     datetime_to -= datetime.timedelta(hours=2)
@@ -21,7 +21,7 @@ def test_set_summary_input():
                           '2023-04-09T23:59:59', 'text')
         redis_connection_mock.set.assert_called_once_with(
             'summary_input:Russia:2023-04-03T00:00:00:2023-04-09T23:59:59',
-            'text', ex=3600 * 24 * 90)
+            'text', ex=3600 * 24 * 7)
     
     with patch('utils.misc.redis_cache.redis_connection') as redis_connection_mock:
         datetime_to = datetime.datetime.utcnow()

@@ -1,3 +1,4 @@
+from loguru import logger
 from telebot.types import Message
 
 from loader import bot
@@ -12,6 +13,8 @@ def bot_start(message: Message):
     :type message: Message
     :rtype: None
     """
+    logger.debug('bot_start()')
+
     user_id, chat_id = message.from_user.id, message.chat.id
     bot.delete_state(user_id, chat_id)
     bot.reply_to(message, f'Hello, {message.from_user.full_name}!')

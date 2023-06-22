@@ -1,6 +1,6 @@
 import math
 import time
-from datetime import datetime
+from datetime import date, datetime
 from random import randint
 from typing import Iterable
 
@@ -8,19 +8,19 @@ from loguru import logger
 
 from config_data import config
 from utils.misc import api_request, get_json_value
-from utils.news.utils import is_datetime_valid
+from utils.news.utils import date_from_to_str, date_to_to_str
 
 
-def get_news(search_query: str, datetime_from: str, datetime_to: str) -> list[dict]:
+def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     """
     Gets news using WebSearch API
 
     :param text: query to search
     :type text: str
-    :param datetime_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_from: str
-    :param datetime_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_to: str
+    :param date_from: start date
+    :type date_from: date
+    :param date_to: end date
+    :type date_to: date
     :raise ValueError: raised when search query is empty
     :raise ValueError: raised when date is invalid
     :raise requests.RequestException: raised if the request fails
@@ -34,7 +34,7 @@ def get_news(search_query: str, datetime_from: str, datetime_to: str) -> list[di
     news = []
 
     n_news_total, query_time = add_first_page_of_news(
-        news, search_query, datetime_from, datetime_to, news_per_page, query_sleep_time)
+        news, search_query, date_from, date_to, news_per_page, query_sleep_time)
     logger.debug(f'got first page of news, count={len(news)}')
 
     n_pages_total = math.ceil(n_news_total / news_per_page)
@@ -48,7 +48,7 @@ def get_news(search_query: str, datetime_from: str, datetime_to: str) -> list[di
 
     page_numbers = _get_random_page_numbers(n_pages_total, n_queries_planned)
 
-    _add_news(news, search_query, datetime_from, datetime_to,
+    _add_news(news, search_query, date_from, date_to,
               page_numbers, news_per_page, query_sleep_time)
     logger.info(f'got all pages of news, count={len(news)}')
 
@@ -56,7 +56,7 @@ def get_news(search_query: str, datetime_from: str, datetime_to: str) -> list[di
 
 
 def add_first_page_of_news(news: list[dict], search_query: str,
-                           datetime_from: str, datetime_to: str, news_per_page: int,
+                           date_from: date, date_to: date, news_per_page: int,
                            query_sleep_time: float) -> tuple[int, float]:
     """
     Gets first page of news with API and adds it to news list
@@ -65,10 +65,10 @@ def add_first_page_of_news(news: list[dict], search_query: str,
     :type news: list[dict]
     :param search_query: query to search
     :type search_query: str
-    :param datetime_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_from: str
-    :param datetime_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_to: str
+    :param date_from: start date
+    :type date_from: date
+    :param date_to: end date
+    :type date_to: date
     :param news_per_page: number of news per page
     :type news_per_page: int
     :param query_sleep_time: time to sleep between queries
@@ -81,14 +81,14 @@ def add_first_page_of_news(news: list[dict], search_query: str,
     :rtype: tuple[int, float]
     """
     start_time = datetime.now()
-    n_news_total = _add_news(news, search_query, datetime_from,
-                             datetime_to, [1], news_per_page, query_sleep_time)
+    n_news_total = _add_news(news, search_query, date_from, date_to,
+                             [1], news_per_page, query_sleep_time)
     query_time = (datetime.now() - start_time).total_seconds()
 
     return n_news_total, query_time
 
 
-def _add_news(news: list[dict], search_query: str, datetime_from: str, datetime_to: str,
+def _add_news(news: list[dict], search_query: str, date_from: date, date_to: date,
               page_numbers: Iterable[int], news_per_page: int, sleep_time: float) -> int:
     """
     Gets news with API and adds it to news list
@@ -97,10 +97,10 @@ def _add_news(news: list[dict], search_query: str, datetime_from: str, datetime_
     :type news: list[dict]
     :param search_query: query to search
     :type search_query: str
-    :param datetime_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_from: str
-    :param datetime_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_to: str
+    :param date_from: start date
+    :type date_from: date
+    :param date_to: end date
+    :type date_to: date
     :param page_numbers: page numbers to get
     :type page_numbers: Iterable[int]
     :param news_per_page: news per page, must be between 10 and 50
@@ -116,8 +116,8 @@ def _add_news(news: list[dict], search_query: str, datetime_from: str, datetime_
     """
     total_count = 0
     for i_page in page_numbers:
-        page = _get_news_page(search_query, i_page,
-                              news_per_page, datetime_from, datetime_to)
+        page = _get_news_page(
+            search_query, i_page, news_per_page, date_from, date_to)
         news_portion = get_json_value(page, ['value'])
         total_count += int(get_json_value(page, ['totalCount']))
         news.extend(news_portion if news_portion is not None else [])
@@ -127,7 +127,7 @@ def _add_news(news: list[dict], search_query: str, datetime_from: str, datetime_
 
 
 def _get_news_page(search_query: str, page_number: int, page_size: int,
-                   datetime_from: str, datetime_to: str) -> list[dict]:
+                   date_from: date, date_to: date) -> list[dict]:
     """
     Gets a news page using WebSearch API
 
@@ -137,10 +137,10 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     :type page_number: int
     :param page_size: news per page, must be between 10 and 50
     :type page_size: int
-    :param datetime_from: start date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_from: str
-    :param datetime_to: end date in format %Y-%m-%dT%H:%M:%S
-    :type datetime_to: str
+    :param date_from: start date
+    :type date_from: date
+    :param date_to: end date
+    :type date_to: date
     :raise ValueError: raised when search query is empty
     :raise ValueError: raised when date is invalid
     :raise ValueError: raised when page_number or page_size is out of range
@@ -158,8 +158,8 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     if not 10 <= page_size <= 50:
         raise ValueError('Page size must be between 10 and 50')
 
-    if not is_datetime_valid(datetime_from) or not is_datetime_valid(datetime_to):
-        raise ValueError('Invalid date format')
+    datetime_from = date_from_to_str(date_from)
+    datetime_to = date_to_to_str(date_to)
 
     url = 'https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI'
 

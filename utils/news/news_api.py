@@ -7,7 +7,8 @@ from typing import Iterable
 from loguru import logger
 
 from config_data import config
-from utils.misc import api_request, get_json_value
+from utils.misc import get_json_value
+from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 from utils.news.utils import date_from_to_str, date_to_to_str
 
 
@@ -177,7 +178,9 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
         'X-RapidAPI-Host': 'contextualwebsearch-websearch-v1.p.rapidapi.com'
     }
 
-    response = api_request('GET', url, headers=headers, request=request)
+    query = ApiQuery('GET', url, headers=headers,
+                     request=request, interval=1)
+    response = ApiQueryScheduler.execute(query)
 
     return response
 

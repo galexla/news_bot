@@ -4,38 +4,6 @@ from datetime import date, datetime, timedelta
 from typing import Iterable, Iterator
 
 
-def is_datetime_valid(date: str) -> bool:
-    """
-    Validates a date. Correct format is %Y-%m-%dT%H:%M:%S
-
-    :date: The date
-    :type date: str
-    :return: validation result
-    :rtype: bool
-    """
-    try:
-        datetime.fromisoformat(date)
-    except:
-        return False
-
-    return re.match(r'^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$', date)
-
-
-def is_date_valid(date: str) -> bool:
-    """
-    Checks if date is of format YYYY-MM-DD
-
-    :param date: date to check
-    :type date: str
-    :rtype: bool
-    """
-    try:
-        datetime.strptime(date, '%Y-%m-%d')
-        return True
-    except ValueError:
-        return False
-
-
 def get_first_day_of_week(date: date) -> date:
     """
     Gets first day of week

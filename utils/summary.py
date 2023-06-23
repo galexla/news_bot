@@ -1,7 +1,8 @@
 from typing import Optional
 
 from config_data import config
-from utils.misc import api_request, get_json_value
+from utils.misc import get_json_value
+from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 
 
 def get_summary(text: str, n_characters: int = 500) -> Optional[list]:
@@ -53,7 +54,9 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
         'text': text
     }
 
-    response = api_request('POST', url, headers, request)
+    query = ApiQuery('POST', url, headers=headers,
+                     request=request, interval=0.005)
+    response = ApiQueryScheduler.execute(query)
     sentences = get_json_value(response, ['sentences'])
 
     return sentences

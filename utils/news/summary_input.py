@@ -36,11 +36,13 @@ def _get_unique_news(news: list[dict]) -> list[dict]:
     """
     result = []
     added_news = set()
+    pattern, empty_str = r'[\W\d]+', ''
     for item in news:
-        item_text = item['body'].lower().replace(' ', '').replace('\t', '')
-        item_text = item_text.replace('\n', '').replace('\r', '')
-        if item_text not in added_news:
-            added_news.add(item_text)
+        body = re.sub(pattern, empty_str, item['body']).lower()
+        description = re.sub(pattern, empty_str, item['description']).lower()
+        if body not in added_news and description not in added_news:
+            added_news.add(body)
+            added_news.add(description)
             result.append(item)
 
     return result
@@ -145,7 +147,8 @@ def _clean_news_text(text: str) -> str:
     :rtype: str
     """
     text = text.strip(' \n\r\t[]():;,{}|')
-    text = re.sub(r'([^\.\?\!])$', r'\1.', text)
+    text = re.sub(r'([^\.\?\!])$', r'\1.', text, flags=re.MULTILINE)
+    text = re.sub(r'([\t ]+)', ' ', text, flags=re.MULTILINE)
 
     return text
 

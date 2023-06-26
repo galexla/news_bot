@@ -1,6 +1,5 @@
 import functools
-import re
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Iterable, Iterator
 
 
@@ -44,6 +43,18 @@ def news_to_texts(news: list[dict], text_keys: Iterable[str],
 
 def to_text(news_item: dict, text_keys: Iterable[str],
             separator: str = '\n\n') -> str:
+    """
+    Joins all text_keys contents to text
+
+    :param news_item: news item
+    :type news_item: dict
+    :param text_keys: text keys
+    :type text_keys: Iterable[str]
+    :param separator: separator
+    :type separator: str
+    :return: text
+    :rtype: str
+    """
     return separator.join(news_item.get(key, '') for key in text_keys)
 
 
@@ -52,9 +63,9 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
     """
     Converts important news to iterator of texts
 
-    :param news: news
+    :param news: news in format {news_id: {'importance': bool, 'news': dict}, ...}
     :type news: dict[dict]
-    :param text_keys: text keys
+    :param text_keys: keys to get text from
     :type text_keys: Iterable[str]
     :rtype: dict[str, str]
     :return: result in format {news_id: text, ...}
@@ -70,9 +81,25 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
 
 @functools.lru_cache(maxsize=128)
 def date_from_to_str(date_from: date) -> str:
+    """
+    Converts date to string in format %Y-%m-%dT00:00:00
+
+    :param date_from: date
+    :type date_from: date
+    :return: date in format %Y-%m-%dT00:00:00
+    :rtype: str
+    """
     return date_from.strftime('%Y-%m-%dT00:00:00')
 
 
 @functools.lru_cache(maxsize=128)
 def date_to_to_str(date_to: date) -> str:
+    """
+    Converts date to string in format %Y-%m-%dT23:59:59
+
+    :param date_to: date
+    :type date_to: date
+    :return: date in format %Y-%m-%dT23:59:59
+    :rtype: str
+    """
     return date_to.strftime('%Y-%m-%dT23:59:59')

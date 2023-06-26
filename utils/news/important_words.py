@@ -114,7 +114,11 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     #         important_words[word] = max_importance * 0.4
 
     importances = sorted(important_words.values(), reverse=True)
-    importances_of_unknown = importances[3] * 0.7
+    if len(importances) < 4:
+        importances_of_unknown = importances[-1] * 0.7
+    else:
+        importances_of_unknown = importances[3] * 0.7
+    
     for word in important_words.keys():
         if important_words[word] == minus_inf:
             important_words[word] = importances_of_unknown

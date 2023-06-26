@@ -9,37 +9,96 @@ from loguru import logger
 
 class ApiQuery:
     """
-    API query
+    Query to API
+
+    Args:
+        method (str): method type (must be POST or GET)
+        url (str): API url
+        headers (dict): request headers
+        body (dict): request body
+        interval (int): interval between queries
+        timeout (int): request timeout
+
+    Attributes:
+        interval (int): interval between queries
+        start_time (datetime or None): query start time, None until request is made
+        end_time (datetime or None): query end time, None until request is made
+        _method (str): method type (POST or GET)
+        _url (str): API url
+        _headers (dict): request headers
+        _body (dict): request body if method is POST, else request params
+        _timeout (int): request timeout
+
+    Raises:
+        ValueError: if method is not POST or GET
     """
 
-    def __init__(self, method: str, url: str, headers: dict, request: dict,
+    def __init__(self, method: str, url: str, headers: dict, body: dict,
                  interval: int, timeout: int = 10):
-        """
-        Constructor
-
-        :param method: method type (POST or GET)
-        :type method: str
-        :param url: API url
-        :type url: str
-        :param headers: request headers
-        :type headers: dict
-        :param request: request itself
-        :type request: dict
-        :param interval: interval between queries
-        :type interval: int
-        :param timeout: request timeout
-        :type timeout: int
-        """
-        self.method = method.upper()
-        if self.method not in ('POST', 'GET'):
+        self._method = method.upper()
+        if self._method not in ('POST', 'GET'):
             raise ValueError('Method must be POST or GET')
-        self.url = url
-        self.headers = headers
-        self.request = request
-        self.interval = interval
-        self.timeout = timeout
-        self.start_time = None
-        self.end_time = None
+        self._url = url
+        self._headers = headers
+        self._body = body
+        self._interval = interval
+        self._timeout = timeout
+        self._start_time = None
+        self._end_time = None
+
+    @property
+    def interval(self) -> int:
+        """
+        Interval between queries
+
+        :return: interval between queries
+        :rtype: int
+        """
+        return self._interval
+
+    @property
+    def start_time(self) -> datetime:
+        """
+        Query start time
+
+        :return: start time
+        :rtype: datetime
+        """
+        return self._start_time
+
+    @start_time.setter
+    def start_time(self, value: datetime) -> None:
+        """
+        Sets query start time
+
+        :param value: value
+        :type value: datetime
+        :rtype: None
+        :return: None
+        """
+        self._start_time = value
+
+    @property
+    def end_time(self) -> datetime:
+        """
+        Query end time
+
+        :return: end time
+        :rtype: datetime
+        """
+        return self._end_time
+
+    @end_time.setter
+    def end_time(self, value: datetime) -> None:
+        """
+        Sets query end time
+
+        :param value: value
+        :type value: datetime
+        :rtype: None
+        :return: None
+        """
+        self._end_time = value
 
     def execute(self) -> Any:
         """
@@ -48,21 +107,21 @@ class ApiQuery:
         :return: result of the query
         :rtype: Any
         """
-        logger.debug(f'Sending request to {self.url}')
+        logger.debug(f'Sending request to {self._url}')
 
         try:
-            if self.method == 'POST':
+            if self._method == 'POST':
                 response = requests.request(
-                    self.method, self.url, json=self.request,
-                    headers=self.headers, timeout=self.timeout)
+                    self._method, self._url, json=self._body,
+                    headers=self._headers, timeout=self._timeout)
             else:
                 response = requests.request(
-                    self.method, self.url, headers=self.headers,
-                    params=self.request, timeout=self.timeout)
+                    self._method, self._url, headers=self._headers,
+                    params=self._body, timeout=self._timeout)
 
             if response.status_code == requests.codes.ok:
                 logger.success('Got answer({}) from {} , answer={}'.format(
-                    len(response.text), self.url, response.text[:100]))
+                    len(response.text), self._url, response.text[:100]))
                 try:
                     return response.json()
                 except requests.exceptions.JSONDecodeError:
@@ -79,7 +138,7 @@ class ApiQueryScheduler:
     """
     API query scheduler
 
-    Args:
+    Attributes:
         from_start (bool): whether to calculate time from a query start or from its end
         __current_query (ApiQuery): current query
     """

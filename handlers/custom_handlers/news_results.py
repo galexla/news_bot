@@ -73,7 +73,21 @@ def get_results(chat_id: int, user_id: int, search_query: str,
 
 def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
                               summary_input: str, important_news: dict) -> tuple[list, list]:
-    """Gets summary and top news and saves in cache if needed"""
+    """
+    Gets summary and top news and saves in cache if needed
+    
+    :param search_query: search query
+    :type search_query: str
+    :param date_from: date from
+    :type date_from: date
+    :param date_to: date to
+    :type date_to: date
+    :param summary_input: summary input
+    :type summary_input: str
+    :param important_news: important news
+    :type important_news: dict
+    :rtype: tuple[list, list]
+    """
     summary = cache.get_set(
         cache.key_query('summary', search_query, date_from, date_to),
         cache.get_ttl(date_to),
@@ -91,7 +105,17 @@ def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
 
 def _display_summary_and_top_news(chat_id: str, summary: list[str],
                                   top_news: list[dict]) -> None:
-    """Displays summary and top news"""
+    """
+    Displays summary and top news
+    
+    :param chat_id: chat id
+    :type chat_id: str
+    :param summary: summary
+    :type summary: list[str]
+    :param top_news: top news
+    :type top_news: list[dict]
+    :rtype: None
+    """
     text_msg = '*Here is summary of news for the chosen period:*\n'
     text_msg = text_msg + ' '.join(summary)
     bot.send_message(chat_id, text_msg, parse_mode='Markdown')

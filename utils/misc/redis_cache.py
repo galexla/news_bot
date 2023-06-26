@@ -24,6 +24,20 @@ def exists(key: str) -> bool:
 
 def all_axists(prefixes: Iterable[str], search_query: str,
                date_from: date, date_to: date) -> bool:
+    """
+    Checks if all keys with specified prefixes exist in Redis
+
+    :param prefixes: prefixes
+    :type prefixes: Iterable[str]
+    :param search_query: search query
+    :type search_query: str
+    :param date_from: date from
+    :type date_from: date
+    :param date_to: date to
+    :type date_to: date
+    :return: True if all keys exist, False otherwise
+    :rtype: bool
+    """
     return all(exists(key_query(prefix, search_query, date_from, date_to))
                for prefix in prefixes)
 
@@ -62,6 +76,14 @@ def key_query(prefix: str, search_query: str, date_from: date,
 
 
 def _get_str_for_log(value: Any) -> str:
+    """
+    Gets string for logging
+
+    :param value: value
+    :type value: Any
+    :return: string for logging
+    :rtype: str
+    """
     if isinstance(value, (dict, list)):
         return f'count={len(value)}'
     if isinstance(value, str):

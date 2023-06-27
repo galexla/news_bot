@@ -74,7 +74,6 @@ class ApiQuery:
         :param value: value
         :type value: datetime
         :rtype: None
-        :return: None
         """
         self._start_time = value
 
@@ -96,7 +95,6 @@ class ApiQuery:
         :param value: value
         :type value: datetime
         :rtype: None
-        :return: None
         """
         self._end_time = value
 

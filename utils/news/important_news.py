@@ -11,6 +11,8 @@ def get_important_news(news: list[dict], text_keys: str | Iterable) -> dict[dict
 
     :param news: news
     :type news: list[dict]
+    :param text_keys: keys to get text from
+    :type text_keys: str | Iterable[str]
     :return: most important news
     :rtype: dict[dict]
     """

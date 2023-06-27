@@ -70,7 +70,6 @@ class SearchHistory(Model):
         :type date_from: date
         :param date_to: date to
         :type date_to: date
-        :return: None
         :rtype: None
         """
         history_item, created = cls.get_or_create(

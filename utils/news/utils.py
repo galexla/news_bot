@@ -5,10 +5,11 @@ from typing import Iterable, Iterator
 
 def get_first_day_of_week(date: date) -> date:
     """
-    Gets first day of week
+    Gets first day of week (Monday) for date
 
     :param date: date
     :type date: date
+    :return: first day of week
     :rtype: date
     """
     return date - timedelta(days=date.weekday())
@@ -16,10 +17,11 @@ def get_first_day_of_week(date: date) -> date:
 
 def get_last_day_of_week(date: date) -> date:
     """
-    Gets last day of week
+    Gets last day of week (Sunday) for date
 
     :param date: date
     :type date: date
+    :return: last day of week
     :rtype: date
     """
     return date + timedelta(days=6 - date.weekday())
@@ -32,9 +34,12 @@ def news_to_texts(news: list[dict], text_keys: Iterable[str],
 
     :param news: news
     :type news: list[dict]
-    :param text_keys: text keys
+    :param text_keys: keys to get text from
     :type text_keys: Iterable[str]
-    :rtype: Iterable[str]
+    :param separator: text separator
+    :type separator: str
+    :yield: text
+    :ytype: str
     """
     for news_item in news:
         text = to_text(news_item, text_keys, separator)
@@ -48,9 +53,9 @@ def to_text(news_item: dict, text_keys: Iterable[str],
 
     :param news_item: news item
     :type news_item: dict
-    :param text_keys: text keys
+    :param text_keys: keys to get text from
     :type text_keys: Iterable[str]
-    :param separator: separator
+    :param separator: text separator
     :type separator: str
     :return: text
     :rtype: str
@@ -67,8 +72,10 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
     :type news: dict[dict]
     :param text_keys: keys to get text from
     :type text_keys: Iterable[str]
-    :rtype: dict[str, str]
+    :param separator: text separator
+    :type separator: str
     :return: result in format {news_id: text, ...}
+    :rtype: dict[str, str]
     """
     result = {}
     for news_id, item in news.items():

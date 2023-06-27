@@ -12,7 +12,7 @@ def get_summary_input(news: list[dict], key: str) -> str:
     :param key: field to get text from
     :type key: str
     :return: text for summary
-    :rtype: list[dict]
+    :rtype: str
     """
     news = _get_unique_news(news)
     average_length = _get_average_length(news, key)
@@ -29,8 +29,6 @@ def _get_unique_news(news: list[dict]) -> list[dict]:
 
     :param news: news
     :type news: list[dict]
-    :param key: field to get text from
-    :type key: str
     :return: news with no duplicates
     :rtype: list[dict]
     """
@@ -52,12 +50,12 @@ def _get_average_length(news: list, key: str) -> int:
     """
     Calculates the average length of a news item
 
-    :news: list of news
+    :param news: list of news
     :type news: list
-    :key: field name to calculate the average length of
+    :param key: field name to calculate the average length of
     :type key: str
-    :raise ValueError: raised if news list is empty
-    :raise ValueError: raised if key is empty
+    :raises ValueError: raised if news list is empty
+    :raises ValueError: raised if key is empty
     :return: average length of a news item
     :rtype: int
     """
@@ -71,6 +69,9 @@ def _get_average_length(news: list, key: str) -> int:
 
     for news_item in news:
         total_length += len(news_item[key])
+    
+    if total_length == 0:
+        raise ValueError('Total length is zero')
 
     average_length = round(total_length / len(news))
 
@@ -83,10 +84,10 @@ def _get_news_count_for_summary(news: list[dict], average_length: int) -> int:
 
     :news: list of news
     :type news: list[dict]
-    :average_length: average length of a news item
+    :param average_length: average length of a news item
     :type average_length: int
-    :raise ValueError: raised if news list is empty
-    :raise ValueError: raised if average length is less or equal to zero
+    :raises ValueError: raised if news list is empty
+    :raises ValueError: raised if average length is less or equal to zero
     :return: number of news to be used for summary generation
     :rtype: int
     """
@@ -109,16 +110,16 @@ def _get_news_count_for_summary(news: list[dict], average_length: int) -> int:
     return news_count
 
 
-def _get_news_for_summary(news: list, n_chunks: int) -> list[dict]:
+def _get_news_for_summary(news: list[dict], n_chunks: int) -> list[dict]:
     """
     Splits a list of news into chunks and returns a random news item from each chunk
 
-    :news: list of news
+    :param news: list of news
     :type news: list[dict]
-    :n_chunks: number of chunks
+    :param n_chunks: number of chunks
     :type n_chunks: int
-    :raise ValueError: raised if news list is empty
-    :raise ValueError: raised if number of chunks is less or equal to zero
+    :raises ValueError: raised if news list is empty
+    :raises ValueError: raised if number of chunks is less or equal to zero
     :return: list of random news items
     :rtype: list[dict]
     """
@@ -163,9 +164,9 @@ def _iterate_news_key(news: list[dict], key: str,
     :param key: field to get text from
     :type key: str
     :param callback: callback to apply to each item
-    :type Callable[[str], str]: callable
-    :return: iterator
-    :rtype: Iterator[str]
+    :type callback: Callable[[str], str]
+    :yield: text
+    :ytype: str
     """
     for item in news:
         if key not in item:

@@ -13,7 +13,7 @@ def most_similar_news_ids(sentences: list[str],
     :type sentences: list[str]
     :param news_texts: news texts in format {news_id: text}
     :type news_texts: dict[str, str]
-    :raise TypeError: if sentences is not of type list
+    :raises TypeError: if sentences is not of type list
     :return: similarities in format {sentence: news_id}
     :rtype: dict[str, dict]
     """

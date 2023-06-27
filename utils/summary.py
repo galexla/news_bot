@@ -13,6 +13,8 @@ def get_summary(text: str, n_characters: int = 500) -> Optional[list]:
     :type text: str
     :param n_characters: maximum size of the summary
     :type n_characters: int
+    :raises requests.RequestException: raised if the request fails
+    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: sentences of the summary
     :rtype: Optional[list]
     """
@@ -28,12 +30,12 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     """
     Make API request to Text-analysis12 API to get text summary
 
-    :param summary_input: text
-    :type summary_input: str
-    :param percent: size of the summary
+    :param text: text
+    :type text: str
+    :param percent: size of the summary to get
     :type percent: float
-    :raise requests.RequestException: raised if the request fails
-    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
+    :raises requests.RequestException: raised if the request fails
+    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: sentences of the summary
     :rtype: Optional[list]
     """

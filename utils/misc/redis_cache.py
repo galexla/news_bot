@@ -128,7 +128,6 @@ def set(key: str, value: Any, ex: int = None) -> None:
     :type value: Any
     :param ex: TTL in seconds
     :type ex: int
-    :return: None
     :rtype: None
     """
     if isinstance(value, (dict, list)):

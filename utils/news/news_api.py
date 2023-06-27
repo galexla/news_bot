@@ -16,16 +16,15 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     """
     Gets news using WebSearch API
 
-    :param text: query to search
-    :type text: str
+    :param search_query: query to search
+    :type search_query: str
     :param date_from: start date
     :type date_from: date
     :param date_to: end date
     :type date_to: date
-    :raise ValueError: raised when search query is empty
-    :raise ValueError: raised when date is invalid
-    :raise requests.RequestException: raised if the request fails
-    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
+    :raises ValueError: raised when search query is empty
+    :raises requests.RequestException: raised if the request fails
+    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: news
     :rtype: list[dict]
     """
@@ -74,10 +73,6 @@ def add_first_page_of_news(news: list[dict], search_query: str,
     :type news_per_page: int
     :param query_sleep_time: time to sleep between queries
     :type query_sleep_time: float
-    :raise ValueError: raised when search query is empty
-    :raise ValueError: raised when date is invalid
-    :raise requests.RequestException: raised if the request fails
-    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: total news count for the query and query time
     :rtype: tuple[int, float]
     """
@@ -108,10 +103,6 @@ def _add_news(news: list[dict], search_query: str, date_from: date, date_to: dat
     :type news_per_page: int
     :param sleep_time: time to sleep between queries, in seconds
     :type sleep_time: float
-    :raise ValueError: raised when search query is empty
-    :raise ValueError: raised when date is invalid
-    :raise requests.RequestException: raised if the request fails
-    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: total news count for the query
     :rtype: int
     """
@@ -132,8 +123,8 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     """
     Gets a news page using WebSearch API
 
-    :param text: query to search
-    :type text: str
+    :param search_query: query to search
+    :type search_query: str
     :param page_number: page number, must be greater than 0
     :type page_number: int
     :param page_size: news per page, must be between 10 and 50
@@ -142,11 +133,10 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     :type date_from: date
     :param date_to: end date
     :type date_to: date
-    :raise ValueError: raised when search query is empty
-    :raise ValueError: raised when date is invalid
-    :raise ValueError: raised when page_number or page_size is out of range
-    :raise requests.RequestException: raised if the request fails
-    :raise requests.exceptions.JSONDecodeError: raised if JSON decoding fails
+    :raises ValueError: raised when search query is empty
+    :raises ValueError: raised when page_number or page_size is out of range
+    :raises requests.RequestException: raised if the request fails
+    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: news
     :rtype: list[dict]
     """
@@ -216,20 +206,20 @@ def _get_random_page_numbers(n_pages_total: int, n_chunks: int) -> list[int]:
     """
     Generates random page number for each chunk
 
-    :n_pages_total: number of pages
+    :param n_pages_total: number of pages
     :type n_pages_total: int
-    :n_chunks: number of chunks
+    :param n_chunks: number of chunks
     :type n_chunks: int
-    :raise ValueError: raised if number of pages is less or equal to zero
-    :raise ValueError: raised if number of chunks is less or equal to zero
+    :raises ValueError: raised if number of pages is less or equal to zero
+    :raises ValueError: raised if number of chunks is less or equal to zero
     :return: random page numbers
     :rtype: list[int]
     """
     if n_pages_total <= 0:
         raise ValueError('Number of pages must be greater than zero')
 
-    if n_chunks < 0:
-        raise ValueError('Number of chunks must be greater or equal to zero')
+    if n_chunks <= 0:
+        raise ValueError('Number of chunks must be greater than zero')
 
     page_numbers = []
 

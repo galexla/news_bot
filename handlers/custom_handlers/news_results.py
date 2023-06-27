@@ -86,6 +86,7 @@ def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
     :type summary_input: str
     :param important_news: important news
     :type important_news: dict
+    :return: summary and top news
     :rtype: tuple[list, list]
     """
     summary = cache.get_set(

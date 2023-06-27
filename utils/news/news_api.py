@@ -57,7 +57,7 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
 
 
 def _get_planned_queries_count(query_time: float, n_pages_total: int,
-                               max_time: float, max_queries_count: int) -> int:
+                               max_total_time: float, max_queries_count: int) -> int:
     """
     Gets the number of queries planned to be sent
 
@@ -65,16 +65,22 @@ def _get_planned_queries_count(query_time: float, n_pages_total: int,
     :type query_time: float
     :param n_pages_total: total number of pages
     :type n_pages_total: int
-    :param max_time: maximum time to spend on queries
-    :type max_time: float
+    :param max_total_time: maximum time to spend on queries
+    :type max_total_time: float
     :param max_queries_count: maximum number of queries to send
     :type max_queries_count: int
+    :raises ValueError: raised when any of the arguments is less than or equal to 0
     :return: number of queries planned to be sent
     :rtype: int
     """
-    n_queries_planned = math.floor(max_time / query_time)
+    if query_time <= 0 or n_pages_total <= 0 \
+            or max_total_time <= 0 or max_queries_count <= 0:
+        raise ValueError('Arguments must be greater than 0')
+
+    n_queries_planned = math.floor(max_total_time / query_time)
     n_queries_planned = min(n_queries_planned, max_queries_count)
     n_queries_planned = min(n_queries_planned, n_pages_total)
+    n_queries_planned = max(n_queries_planned, 1)
 
     return n_queries_planned
 

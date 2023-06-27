@@ -57,7 +57,7 @@ class ApiQuery:
         return self._interval
 
     @property
-    def start_time(self) -> datetime:
+    def start_time(self) -> datetime | None:
         """
         Query start time
 
@@ -78,7 +78,7 @@ class ApiQuery:
         self._start_time = value
 
     @property
-    def end_time(self) -> datetime:
+    def end_time(self) -> datetime | None:
         """
         Query end time
 

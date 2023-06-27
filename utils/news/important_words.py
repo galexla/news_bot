@@ -87,6 +87,10 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     :return: dictionary with importance of words
     :rtype: dict[str, float]
     """
+    MINUS_INF = float('-inf')
+    RARE_WORD_MULT = 0.7
+    RARE_WORD_BASE_IDX = 3
+
     important_words = {}
     if len(all_words) == 0:
         return important_words
@@ -94,7 +98,6 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     n_words = len(all_words)
     counter = Counter(all_words)
 
-    minus_inf = float('-inf')
     for word, count in counter.items():
         if word in important_words:
             continue
@@ -103,24 +106,24 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
         usual_frequency = wordfreq.word_frequency(
             word, 'en', wordlist='best', minimum=0.0)
         importance = math.log2(
-            frequency / usual_frequency) if usual_frequency != 0 else minus_inf
+            frequency / usual_frequency) if usual_frequency != 0 else MINUS_INF
 
         important_words[word] = importance
 
     # max_importance = max(important_words.values())
     # max_importance = max(max_importance, 1)
     # for word in important_words.keys():
-    #     if important_words[word] == minus_inf:
+    #     if important_words[word] == MINUS_INF:
     #         important_words[word] = max_importance * 0.4
 
     importances = sorted(important_words.values(), reverse=True)
-    if len(importances) < 4:
-        importances_of_unknown = importances[-1] * 0.7
+    if len(importances) < RARE_WORD_BASE_IDX + 1:
+        importances_of_unknown = importances[-1] * RARE_WORD_MULT
     else:
-        importances_of_unknown = importances[3] * 0.7
+        importances_of_unknown = importances[RARE_WORD_BASE_IDX] * RARE_WORD_MULT
     
     for word in important_words.keys():
-        if important_words[word] == minus_inf:
+        if important_words[word] == MINUS_INF:
             important_words[word] = importances_of_unknown
 
     return important_words

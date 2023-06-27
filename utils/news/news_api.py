@@ -1,5 +1,4 @@
 import math
-import time
 from datetime import date, datetime
 from random import randint
 from typing import Iterable
@@ -10,6 +9,12 @@ from config_data import config
 from utils.misc import get_json_value
 from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 from utils.news.utils import date_from_to_str, date_to_to_str
+
+# TODO: move to config?
+MIN_REQUEST_INTERVAL = 1
+MAX_TOTAL_QUERIES_TIME = 6
+NEWS_PER_PAGE = 50
+MAX_QUERIES_COUNT = 7
 
 
 def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
@@ -28,19 +33,15 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     :return: news
     :rtype: list[dict]
     """
-    news_per_page = 50
-    query_sleep_time = 0.15
-
     news = []
 
     n_news_total, query_time = add_first_page_of_news(
-        news, search_query, date_from, date_to, news_per_page, query_sleep_time)
+        news, search_query, date_from, date_to, NEWS_PER_PAGE)
     logger.debug(f'got first page of news, count={len(news)}')
 
-    n_pages_total = math.ceil(n_news_total / news_per_page)
+    n_pages_total = math.ceil(n_news_total / NEWS_PER_PAGE)
     n_queries_planned = _get_planned_queries_count(
-        query_time, n_pages_total, query_sleep_time,
-        max_total_time=6, max_queries=10)
+        query_time, n_pages_total, MAX_TOTAL_QUERIES_TIME, MAX_QUERIES_COUNT)
     logger.debug(
         'n_news_total={}, n_pages_total={}, n_queries_planned={}'.format(
             n_news_total, n_pages_total, n_queries_planned)
@@ -49,15 +50,38 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     page_numbers = _get_random_page_numbers(n_pages_total, n_queries_planned)
 
     _add_news(news, search_query, date_from, date_to,
-              page_numbers, news_per_page, query_sleep_time)
+              page_numbers, NEWS_PER_PAGE)
     logger.info(f'got all pages of news, count={len(news)}')
 
     return news
 
 
+def _get_planned_queries_count(query_time: float, n_pages_total: int,
+                               max_time: float, max_queries_count: int) -> int:
+    """
+    Gets the number of queries planned to be sent
+
+    :param query_time: expected time of a single query
+    :type query_time: float
+    :param n_pages_total: total number of pages
+    :type n_pages_total: int
+    :param max_time: maximum time to spend on queries
+    :type max_time: float
+    :param max_queries_count: maximum number of queries to send
+    :type max_queries_count: int
+    :return: number of queries planned to be sent
+    :rtype: int
+    """
+    n_queries_planned = math.floor(max_time / query_time)
+    n_queries_planned = min(n_queries_planned, max_queries_count)
+    n_queries_planned = min(n_queries_planned, n_pages_total)
+
+    return n_queries_planned
+
+
 def add_first_page_of_news(news: list[dict], search_query: str,
-                           date_from: date, date_to: date, news_per_page: int,
-                           query_sleep_time: float) -> tuple[int, float]:
+                           date_from: date, date_to: date,
+                           news_per_page: int) -> tuple[int, float]:
     """
     Gets first page of news with API and adds it to news list
 
@@ -71,21 +95,20 @@ def add_first_page_of_news(news: list[dict], search_query: str,
     :type date_to: date
     :param news_per_page: number of news per page
     :type news_per_page: int
-    :param query_sleep_time: time to sleep between queries
-    :type query_sleep_time: float
     :return: total news count for the query and query time
     :rtype: tuple[int, float]
     """
     start_time = datetime.now()
-    n_news_total = _add_news(news, search_query, date_from, date_to,
-                             [1], news_per_page, query_sleep_time)
+    n_news_total = _add_news(
+        news, search_query, date_from, date_to, [1], news_per_page)
     query_time = (datetime.now() - start_time).total_seconds()
+    query_time = max(query_time, MIN_REQUEST_INTERVAL)
 
     return n_news_total, query_time
 
 
 def _add_news(news: list[dict], search_query: str, date_from: date, date_to: date,
-              page_numbers: Iterable[int], news_per_page: int, sleep_time: float) -> int:
+              page_numbers: Iterable[int], news_per_page: int) -> int:
     """
     Gets news with API and adds it to news list
 
@@ -101,8 +124,6 @@ def _add_news(news: list[dict], search_query: str, date_from: date, date_to: dat
     :type page_numbers: Iterable[int]
     :param news_per_page: news per page, must be between 10 and 50
     :type news_per_page: int
-    :param sleep_time: time to sleep between queries, in seconds
-    :type sleep_time: float
     :return: total news count for the query
     :rtype: int
     """
@@ -113,7 +134,6 @@ def _add_news(news: list[dict], search_query: str, date_from: date, date_to: dat
         news_portion = get_json_value(page, ['value'])
         total_count += int(get_json_value(page, ['totalCount']))
         news.extend(news_portion if news_portion is not None else [])
-        time.sleep(sleep_time)
 
     return total_count
 
@@ -140,14 +160,18 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     :return: news
     :rtype: list[dict]
     """
+    MIN_PAGE_SIZE = 10
+    MAX_PAGE_SIZE = 50
+
     if search_query.strip() == '':
         raise ValueError('Search query must not be empty')
 
     if page_number <= 0:
         raise ValueError('Page number must be greater than 0')
 
-    if not 10 <= page_size <= 50:
-        raise ValueError('Page size must be between 10 and 50')
+    if not MIN_PAGE_SIZE <= page_size <= MAX_PAGE_SIZE:
+        raise ValueError(
+            f'Page size must be between {MIN_PAGE_SIZE} and {MAX_PAGE_SIZE}')
 
     datetime_from = date_from_to_str(date_from)
     datetime_to = date_to_to_str(date_to)
@@ -169,37 +193,10 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     }
 
     query = ApiQuery('GET', url, headers=headers,
-                     request=request, interval=1)
+                     request=request, interval=MIN_REQUEST_INTERVAL)
     response = ApiQueryScheduler.execute(query)
 
     return response
-
-
-def _get_planned_queries_count(query_time: float, n_pages_total: int,
-                               sleep_time: float, max_total_time: float = 6,
-                               max_queries: int = 10) -> int:
-    """
-    Gets the number of queries planned to be sent
-
-    :param query_time: time of a single query
-    :type query_time: float
-    :param n_pages_total: total number of pages
-    :type n_pages_total: int
-    :param sleep_time: time to sleep between queries, in seconds
-    :type sleep_time: float
-    :param max_total_time: maximum execution time of all queries, in seconds
-    :type max_total_time: float
-    :param max_queries: maximum number of queries to send
-    :type max_queries: int
-    :return: number of queries planned to be sent
-    :rtype: int
-    """
-    n_queries_planned = math.floor(
-        (max_total_time + sleep_time) / (query_time + sleep_time))
-    n_queries_planned = min(n_queries_planned, max_queries)
-    n_queries_planned = min(n_queries_planned, n_pages_total)
-
-    return n_queries_planned
 
 
 def _get_random_page_numbers(n_pages_total: int, n_chunks: int) -> list[int]:

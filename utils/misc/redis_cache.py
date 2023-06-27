@@ -203,9 +203,13 @@ def get_ttl(date_to: date) -> int:
     :return: TTL
     :rtype: int
     """
+    FRESH_RECORD_TTL = 3600 * 3
+    OLD_RECORD_TTL = 3600 * 24 * 7
+    FRESH_OLD_THRESHOLD = 3600 * 24 * 2
+
     date_to = datetime.combine(date_to, datetime.max.time())
     now = datetime.utcnow().timestamp()
 
-    if now - date_to.timestamp() >= 3600 * 24 * 2:
-        return 3600 * 24 * 7
-    return 3600 * 3
+    if now - date_to.timestamp() >= FRESH_OLD_THRESHOLD:
+        return OLD_RECORD_TTL
+    return FRESH_RECORD_TTL

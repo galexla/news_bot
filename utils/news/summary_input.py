@@ -91,20 +91,20 @@ def _get_news_count_for_summary(news: list[dict], average_length: int) -> int:
     :return: number of news to be used for summary generation
     :rtype: int
     """
+    MIN_NEWS_COUNT = 50
+    MAX_SUMMARY_INPUT = 50000
+
     if len(news) == 0:
         raise ValueError('News list is empty')
 
     if average_length <= 0:
         raise ValueError('Average length must be greater than zero')
 
-    max_summary_input = 50000
-    min_news_count = 50
-
-    if len(news) < min_news_count:
+    if len(news) < MIN_NEWS_COUNT:
         return len(news)
 
-    news_count = round(max_summary_input / average_length)
-    news_count = max(min_news_count, news_count)
+    news_count = round(MAX_SUMMARY_INPUT / average_length)
+    news_count = max(MIN_NEWS_COUNT, news_count)
     news_count = min(len(news), news_count)
 
     return news_count

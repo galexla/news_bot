@@ -39,6 +39,7 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     :return: sentences of the summary
     :rtype: Optional[list]
     """
+    MIN_REQUEST_INTERVAL = 0.005
     percent = min(100, percent)
     percent = max(0, percent)
 
@@ -57,7 +58,7 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     }
 
     query = ApiQuery('POST', url, headers=headers,
-                     request=request, interval=0.005)
+                     request=request, interval=MIN_REQUEST_INTERVAL)
     response = ApiQueryScheduler.execute(query)
     sentences = get_json_value(response, ['sentences'])
 

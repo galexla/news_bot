@@ -126,3 +126,21 @@ def test_important_news_to_texts() -> None:
         'id1': 'title1\n\ntext1',
         'id2': 'title2\n\ntext2',
     }
+
+
+def test_date_from_to_str() -> str:
+    """
+    Converts date_from to string
+    """
+    date_from = date(2020, 1, 1)
+    expected = date_from.strftime('%Y-%m-%dT00:00:00')
+    assert news_utils.date_from_to_str(date_from) == expected
+
+
+def test_date_to_to_str() -> str:
+    """
+    Converts date_to to string
+    """
+    date_to = date(2020, 1, 1)
+    expected = date_to.strftime('%Y-%m-%dT23:59:59')
+    assert news_utils.date_to_to_str(date_to) == expected

@@ -1,4 +1,4 @@
-from utils.misc.summary_input import _clean_news_text, _join_news
+from utils.news.summary_input import _clean_news_text, _join_news
 
 
 def test__clean_news_text():

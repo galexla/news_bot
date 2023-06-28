@@ -69,7 +69,7 @@ def _get_average_length(news: list, key: str) -> int:
 
     for news_item in news:
         total_length += len(news_item[key])
-    
+
     if total_length == 0:
         raise ValueError('Total length is zero')
 
@@ -128,6 +128,9 @@ def _get_news_for_summary(news: list[dict], n_chunks: int) -> list[dict]:
 
     if n_chunks <= 0:
         raise ValueError('Number of chunks must be greater than zero')
+
+    if n_chunks >= len(news):
+        return news
 
     result = []
     chunk_size = len(news) / n_chunks

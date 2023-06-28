@@ -181,14 +181,14 @@ class ApiQueryScheduler:
         :return: result of the query
         :rtype: Any
         """
+        query.start_time = datetime.utcnow()
+        result = query.execute()
+        query.end_time = datetime.utcnow()
+
         sleep_time = cls.__get_sleep_time(cls.__current_query)
         if sleep_time > 0:
             loguru.debug(f'Sleeping for {sleep_time} seconds')
             sleep(sleep_time)
-
-        query.start_time = datetime.utcnow()
-        result = query.execute()
-        query.end_time = datetime.utcnow()
 
         cls.__current_query = query
         return result

@@ -2,7 +2,6 @@ from datetime import datetime
 from time import sleep
 from typing import Any
 
-import loguru
 import requests
 from loguru import logger
 
@@ -138,10 +137,8 @@ class ApiQueryScheduler:
 
     Attributes:
         from_start (bool): whether to calculate time from a query start or from its end
-        __current_query (ApiQuery): current query
     """
     from_start: bool = True
-    __current_query: ApiQuery = None
 
     @classmethod
     def __get_sleep_time(cls, query: ApiQuery) -> int:
@@ -185,10 +182,9 @@ class ApiQueryScheduler:
         result = query.execute()
         query.end_time = datetime.utcnow()
 
-        sleep_time = cls.__get_sleep_time(cls.__current_query)
+        sleep_time = cls.__get_sleep_time(query)
         if sleep_time > 0:
-            loguru.debug(f'Sleeping for {sleep_time} seconds')
+            logger.debug(f'Sleeping for {sleep_time} seconds')
             sleep(sleep_time)
 
-        cls.__current_query = query
         return result

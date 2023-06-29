@@ -106,7 +106,7 @@ def get(key) -> Any:
     return _cast_type(value)
 
 
-def ttl(key: str) -> int:
+def get_ttl(key: str) -> int:
     """
     Gets TTL of key
 
@@ -194,11 +194,11 @@ def _cast_type(value: Any) -> Any:
     return value
 
 
-def get_ttl(date_to: date) -> int:
+def calc_ttl(date_to: date) -> int:
     """
-    Gets TTL in seconds for search query
+    Calculates TTL in seconds for give date_to of a search query
 
-    :param date_to: date to of search query
+    :param date_to: date to
     :type date_to: date
     :return: TTL
     :rtype: int

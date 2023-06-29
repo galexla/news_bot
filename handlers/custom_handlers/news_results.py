@@ -91,12 +91,12 @@ def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
     """
     summary = cache.get_set(
         cache.key_query('summary', search_query, date_from, date_to),
-        cache.get_ttl(date_to),
+        cache.calc_ttl(date_to),
         get_summary, summary_input)
 
     top_news = cache.get_set(
         cache.key_query('top_news', search_query, date_from, date_to),
-        cache.get_ttl(date_to),
+        cache.calc_ttl(date_to),
         get_top_news, summary, important_news)
 
     cache_top_news(top_news, date_to)

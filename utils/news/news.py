@@ -32,17 +32,17 @@ def get_news_semimanufactures(search_query: str, date_from: date,
 
     news_count = cache.get_set(
         cache.key_query('news_count', search_query, date_from, date_to),
-        cache.get_ttl(date_to),
+        cache.calc_ttl(date_to),
         get_news_count, news)
 
     summary_input = cache.get_set(
         cache.key_query('summary_input', search_query, date_from, date_to),
-        cache.get_ttl(date_to),
+        cache.calc_ttl(date_to),
         get_summary_input, news, TEXT_KEY)
 
     important_news = cache.get_set(
         cache.key_query('important_news', search_query, date_from, date_to),
-        cache.get_ttl(date_to),
+        cache.calc_ttl(date_to),
         get_important_news, news, TEXT_KEY)
 
     return news_count, summary_input, important_news

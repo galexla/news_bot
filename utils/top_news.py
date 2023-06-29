@@ -43,7 +43,7 @@ def cache_top_news(top_news: list[dict], date_to: date) -> None:
     for news_item in top_news:
         key = cache.key('top_news_item', news_item['id'])
         if not cache.exists(key):
-            cache.set(key, news_item, ex=cache.get_ttl(date_to))
+            cache.set(key, news_item, ex=cache.calc_ttl(date_to))
 
 
 def get_cached_top_news(id: str) -> Tuple[str, str, str, int]:
@@ -58,5 +58,5 @@ def get_cached_top_news(id: str) -> Tuple[str, str, str, int]:
     key = cache.key('top_news_item', id)
     if cache.exists(key):
         news_item = cache.get(key)
-        return news_item, cache.ttl(key)
+        return news_item, cache.get_ttl(key)
     return '', '', '', 0

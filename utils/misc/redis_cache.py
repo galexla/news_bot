@@ -22,7 +22,7 @@ def exists(key: str) -> bool:
     return redis_connection.exists(key)
 
 
-def all_axists(prefixes: Iterable[str], search_query: str,
+def all_exist(prefixes: Iterable[str], search_query: str,
                date_from: date, date_to: date) -> bool:
     """
     Checks if all keys with specified prefixes exist in Redis

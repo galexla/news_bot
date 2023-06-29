@@ -27,7 +27,7 @@ def get_news_semimanufactures(search_query: str, date_from: date,
     PREFIXES = ('news_count', 'summary_input', 'important_news')
 
     news = None
-    if not cache.all_axists(PREFIXES, search_query, date_from, date_to):
+    if not cache.all_exist(PREFIXES, search_query, date_from, date_to):
         news = news_api.get_news(search_query, date_from, date_to)
 
     news_count = cache.get_set(

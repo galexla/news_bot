@@ -17,7 +17,6 @@ class SearchHistory(Model):
         date_from (date): date from
         date_to (date): date to
     """
-
     id = AutoField()
     user_id = CharField(max_length=255)
     entered_date = DateTimeField(default=datetime.utcnow)

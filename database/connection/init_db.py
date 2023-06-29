@@ -1,9 +1,22 @@
 from peewee import PostgresqlDatabase
 
-from config_data import config
+db = PostgresqlDatabase(None)
 
-db = PostgresqlDatabase(config.POSTGRES_DB, host=config.POSTGRES_HOST,
-                        user=config.POSTGRES_USER,
-                        password=config.POSTGRES_PASSWORD,
-                        port=config.POSTGRES_PORT)
-db.connect(True)
+
+def init_db(name, **kwargs):
+    db.init(name, **kwargs)
+    db.connect()
+
+
+def create_tables():
+    try:
+        from database.models.SearchHistory import SearchHistory
+    except ImportError:
+        print("Could not import models. Is the database initialized?")
+        return
+
+    models = [SearchHistory]
+    with db:
+        # if config.DROP_TABLES:
+        #     db.drop_tables(models)
+        db.create_tables(models, safe=True)

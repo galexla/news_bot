@@ -23,7 +23,7 @@ def exists(key: str) -> bool:
 
 
 def all_exist(prefixes: Iterable[str], search_query: str,
-               date_from: date, date_to: date) -> bool:
+              date_from: date, date_to: date) -> bool:
     """
     Checks if all keys with specified prefixes exist in Redis
 
@@ -75,22 +75,6 @@ def key_query(prefix: str, search_query: str, date_from: date,
     return key(prefix, search_query, date_from, date_to)
 
 
-def _get_str_for_log(value: Any) -> str:
-    """
-    Gets string for logging
-
-    :param value: value
-    :type value: Any
-    :return: string for logging
-    :rtype: str
-    """
-    if isinstance(value, (dict, list)):
-        return f'count={len(value)}'
-    if isinstance(value, str):
-        return f'{value[:100]}...'
-    return value
-
-
 def get(key) -> Any:
     """
     Gets value from Redis
@@ -104,6 +88,36 @@ def get(key) -> Any:
     if value is None:
         logger.info(f'Key {key} not found in Redis')
     return _cast_type(value)
+
+
+def _cast_type(value: Any) -> Any:
+    """
+    Tries to cast value to int, float or json
+
+    :param value: value
+    :type value: Any
+    :return: simple value
+    :rtype: Any
+    """
+    if value is None:
+        return value
+
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    try:
+        return float(value)
+    except ValueError:
+        pass
+
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        pass
+
+    return value
 
 
 def get_ttl(key: str) -> int:
@@ -164,33 +178,21 @@ def get_set(key: str, ttl: int, func: callable, *args, **kwargs) -> Any:
     return result
 
 
-def _cast_type(value: Any) -> Any:
+def _get_str_for_log(value: Any) -> str:
     """
-    Tries to cast value to int, float or json
+    Gets string for logging
 
     :param value: value
     :type value: Any
-    :return: simple value
-    :rtype: Any
+    :return: string for logging
+    :rtype: str
     """
-    if value is None:
+    if isinstance(value, (dict, list)):
+        return f'count={len(value)}'
+    if isinstance(value, str):
+        if len(value) > 100:
+            return f'{value[:100]}...'
         return value
-
-    try:
-        return int(value)
-    except ValueError:
-        pass
-
-    try:
-        return float(value)
-    except ValueError:
-        pass
-
-    try:
-        return json.loads(value)
-    except json.JSONDecodeError:
-        pass
-
     return value
 
 

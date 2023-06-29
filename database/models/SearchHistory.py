@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from peewee import AutoField, CharField, DateField, DateTimeField, Model
 
-from database.connection.init_db import db
+from database.init_db import db
 
 
 class SearchHistory(Model):

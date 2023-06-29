@@ -8,7 +8,7 @@ from telebot import logging
 from telebot.storage import StateRedisStorage
 
 from config_data import config
-from database.connection.init_db import create_tables, init_db
+from database.init_db import create_tables, init_db
 
 loguru.logger.add(sys.stdout, level='DEBUG')
 # loguru.logger.add(sys.stdout, level='INFO')

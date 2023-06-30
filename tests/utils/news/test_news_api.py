@@ -1,5 +1,10 @@
+from unittest.mock import patch
+
 import pytest
-from utils.news import news_api
+
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from utils.news import news_api
 
 
 def test_get_planned_queries_count():
@@ -42,4 +47,5 @@ def test_get_random_page_numbers():
     assert len(actual) == 2 and 1 <= actual[0] <= 5 and 6 <= actual[1] <= 10
 
     actual = news_api._get_random_page_numbers(10, 3)
-    assert len(actual) == 3 and 1 <= actual[0] <= 3 and 4 <= actual[1] <= 7 and 8 <= actual[2] <= 10
+    assert len(
+        actual) == 3 and 1 <= actual[0] <= 3 and 4 <= actual[1] <= 7 and 8 <= actual[2] <= 10

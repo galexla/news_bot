@@ -30,7 +30,7 @@ def test_ApiQuery():
     assert query.end_time == 'b'
 
 
-@pytest.mark.parametrize("method, url, headers, body, interval, timeout, status_code, expected_response", [
+@pytest.mark.parametrize('method, url, headers, body, interval, timeout, status_code, expected_response', [
     ('GET', 'http://test.com', {'content-type': 'application/json'},
      {'key': 'value'}, 5, 10, 200, {'result': 'success'}),
     ('POST', 'http://test.com', {'content-type': 'application/json'},
@@ -57,7 +57,7 @@ def test_ApiQuery_execute(method, url, headers, body, interval, timeout, status_
     assert requests_mock.last_request.timeout == api_query._timeout
 
 
-@pytest.mark.parametrize("interval, from_start, time_delta, expected_result", [
+@pytest.mark.parametrize('interval, from_start, time_delta, expected_result', [
     (1,   True,  1.2, 0),
     (1,   True,  0.8, 0.2),
     (1.5, True,  1.2, 0.3),
@@ -83,7 +83,7 @@ def test_ApiQueryScheduler_get_sleep_time_no_start_end():
     assert ApiQueryScheduler._ApiQueryScheduler__get_sleep_time(query) == 0
 
 
-@pytest.mark.parametrize("interval, expected_result", [
+@pytest.mark.parametrize('interval, expected_result', [
     (0.2, 0.2),
     (0.5, 0.5),
     (0.7, 0.7),

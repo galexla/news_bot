@@ -1,4 +1,3 @@
-from datetime import date
 import pytest
 from utils.news import news_api
 

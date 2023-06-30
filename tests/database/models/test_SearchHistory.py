@@ -8,8 +8,8 @@ from database.models.SearchHistory import SearchHistory
 
 @pytest.fixture
 def history_item():
-    user_id = "123"
-    query = "test_query"
+    user_id = '123'
+    query = 'test_query'
     date_from = date(2023, 1, 1)
     date_to = date(2023, 1, 2)
     return SearchHistory(user_id=user_id, query=query, date_from=date_from,

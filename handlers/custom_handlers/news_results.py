@@ -75,7 +75,7 @@ def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
                               summary_input: str, important_news: dict) -> tuple[list, list]:
     """
     Gets summary and top news and saves in cache if needed
-    
+
     :param search_query: search query
     :type search_query: str
     :param date_from: date from
@@ -108,7 +108,7 @@ def _display_summary_and_top_news(chat_id: str, summary: list[str],
                                   top_news: list[dict]) -> None:
     """
     Displays summary and top news
-    
+
     :param chat_id: chat id
     :type chat_id: str
     :param summary: summary

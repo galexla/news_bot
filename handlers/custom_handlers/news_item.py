@@ -24,13 +24,13 @@ def bot_click_news_item(call: CallbackQuery):
     news_id = re.search(r'^news_(\d+)$', call.data).group(1).strip()
     chat_id, user_id = call.message.chat.id, call.from_user.id
 
-    try:
-        news_item, _ = top_news.get_cached_top_news(news_id)
+    news_item, _ = top_news.get_cached_top_news(news_id)
+    if news_item:
         title, url = news_item['title'], news_item['url']
         bot.send_message(chat_id, f'*{title}*',
                          reply_markup=news_menu.news_item(news_id, url),
                          parse_mode='Markdown')
-    except ValueError:
+    else:
         logger.error(
             f'Error occurred while fetching news item: {news_id} for user: '
             f'{user_id} in chat: {chat_id}.')
@@ -53,11 +53,7 @@ def bot_news_summary(call: CallbackQuery):
     chat_id = call.message.chat.id
 
     news_item, ttl = top_news.get_cached_top_news(news_id)
-    if not news_item:
-        logger.error(f'Unable to get summary for news id "{news_id}"')
-        bot.send_message(chat_id, '*Unable to get news summary.*',
-                         parse_mode='Markdown')
-    else:
+    if news_item:
         summary = cache.get_set(cache.key('article_summary', news_id), ttl,
                                 get_summary, news_item['body'])
         summary = ' '.join(summary)
@@ -65,3 +61,7 @@ def bot_news_summary(call: CallbackQuery):
         title = news_item['title']
         text_msg = f'*Summary of article "{title}"*:\n{summary}'
         bot.send_message(chat_id, text_msg, parse_mode='Markdown')
+    else:
+        logger.error(f'Unable to get summary for news id "{news_id}"')
+        bot.send_message(chat_id, '*Unable to get news summary.*',
+                         parse_mode='Markdown')

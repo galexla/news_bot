@@ -46,17 +46,17 @@ def cache_top_news(top_news: list[dict], date_to: date) -> None:
             cache.set(key, news_item, ex=cache.calc_ttl(date_to))
 
 
-def get_cached_top_news(id: str) -> Tuple[str, str, str, int]:
+def get_cached_top_news(id: str) -> Tuple[dict | None, int]:
     """
     Returns top news item title, url, body and ttl
 
     :param id: news id
     :type id: str
     :return: title and url
-    :rtype: Tuple[str, str, str, int]
+    :rtype: Tuple[dict | None, int]
     """
     key = cache.key('top_news_item', id)
     if cache.exists(key):
         news_item = cache.get(key)
         return news_item, cache.get_ttl(key)
-    return '', '', '', 0
+    return None, 0

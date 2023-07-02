@@ -4,6 +4,8 @@ from config_data import config
 from utils.misc import get_json_value
 from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 
+MIN_REQUEST_INTERVAL = 0.005
+
 
 def get_summary(text: str, n_characters: int = 500) -> Optional[list]:
     """
@@ -39,7 +41,6 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     :return: sentences of the summary
     :rtype: Optional[list]
     """
-    MIN_REQUEST_INTERVAL = 0.005
     percent = min(100, percent)
     percent = max(0, percent)
 

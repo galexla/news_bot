@@ -10,11 +10,12 @@ from utils.misc import get_json_value
 from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 from utils.news.utils import date_from_to_str, date_to_to_str
 
-# TODO: move to config?
 MIN_REQUEST_INTERVAL = 1
 MAX_TOTAL_QUERIES_TIME = 6
 NEWS_PER_PAGE = 50
 MAX_QUERIES_COUNT = 7
+MIN_PAGE_SIZE = 10
+MAX_PAGE_SIZE = 50
 
 
 def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
@@ -166,9 +167,6 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     :return: news
     :rtype: list[dict]
     """
-    MIN_PAGE_SIZE = 10
-    MAX_PAGE_SIZE = 50
-
     if search_query.strip() == '':
         raise ValueError('Search query must not be empty')
 

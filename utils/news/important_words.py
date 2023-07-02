@@ -2,7 +2,12 @@ import math
 import re
 from collections import Counter
 from typing import Iterable
+
 import wordfreq
+
+MINUS_INF = float('-inf')
+RARE_WORD_MULT = 0.7
+RARE_WORD_BASE_IDX = 3
 
 
 def get_important_words(texts: Iterable[str] | str, words_percent: int = 25) -> dict:
@@ -87,10 +92,6 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     :return: dictionary with importance of words
     :rtype: dict[str, float]
     """
-    MINUS_INF = float('-inf')
-    RARE_WORD_MULT = 0.7
-    RARE_WORD_BASE_IDX = 3
-
     important_words = {}
     if len(all_words) == 0:
         return important_words
@@ -120,8 +121,9 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     if len(importances) < RARE_WORD_BASE_IDX + 1:
         importances_of_unknown = importances[-1] * RARE_WORD_MULT
     else:
-        importances_of_unknown = importances[RARE_WORD_BASE_IDX] * RARE_WORD_MULT
-    
+        importances_of_unknown = importances[RARE_WORD_BASE_IDX] * \
+            RARE_WORD_MULT
+
     for word in important_words.keys():
         if important_words[word] == MINUS_INF:
             important_words[word] = importances_of_unknown

@@ -2,6 +2,9 @@ import re
 from random import randint
 from typing import Callable, Iterator
 
+SUMMARY_MIN_NEWS_N = 50
+SUMMARY_MAX_INPUT = 50000
+
 
 def get_summary_input(news: list[dict], key: str) -> str:
     """
@@ -91,20 +94,17 @@ def _get_news_count_for_summary(news: list[dict], average_length: int) -> int:
     :return: number of news to be used for summary generation
     :rtype: int
     """
-    MIN_NEWS_COUNT = 50
-    MAX_SUMMARY_INPUT = 50000
-
     if len(news) == 0:
         raise ValueError('News list is empty')
 
     if average_length <= 0:
         raise ValueError('Average length must be greater than zero')
 
-    if len(news) < MIN_NEWS_COUNT:
+    if len(news) < SUMMARY_MIN_NEWS_N:
         return len(news)
 
-    news_count = round(MAX_SUMMARY_INPUT / average_length)
-    news_count = max(MIN_NEWS_COUNT, news_count)
+    news_count = round(SUMMARY_MAX_INPUT / average_length)
+    news_count = max(SUMMARY_MIN_NEWS_N, news_count)
     news_count = min(len(news), news_count)
 
     return news_count

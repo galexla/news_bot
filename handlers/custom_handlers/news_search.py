@@ -8,6 +8,8 @@ from loader import bot
 from states.news_state import NewsState
 from utils.news import utils as news_utils
 
+MAX_INVALID_INPUTS = 3
+
 
 @bot.message_handler(commands=['news'])
 def bot_news_start(message: Message) -> None:
@@ -62,12 +64,11 @@ def _handle_invalid_input(message: Message, error_message: str) -> None:
     :type error_message: str
     :rtype: None
     """
-    MAX_ATTEMPTS = 3
     chat_id, user_id = message.chat.id, message.from_user.id
     with bot.retrieve_data(user_id, chat_id) as data:
         n_invalid_inputs = data.get('n_invalid_inputs', 0)
         data['n_invalid_inputs'] = n_invalid_inputs + 1
-        if n_invalid_inputs >= MAX_ATTEMPTS:
+        if n_invalid_inputs >= MAX_INVALID_INPUTS:
             bot.delete_state(user_id, chat_id)
             text = 'You entered invalid data 3 times. You can start over by entering /news'
             bot.reply_to(message, text)

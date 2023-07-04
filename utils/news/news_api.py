@@ -38,21 +38,20 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
 
     n_news_total, query_time = add_first_page_of_news(
         news, search_query, date_from, date_to, NEWS_PER_PAGE)
-    logger.debug(f'got first page of news, count={len(news)}')
-
     n_pages_total = math.ceil(n_news_total / NEWS_PER_PAGE)
-    n_queries_planned = _get_planned_queries_count(
+    logger.success(f'got first page of news, count={len(news)}'
+                   f', total={n_news_total}, total_pages={n_pages_total}')
+
+    n_queries = _get_queries_count(
         query_time, n_pages_total, MAX_TOTAL_QUERIES_TIME, MAX_QUERIES_COUNT)
-    logger.debug(
-        'n_news_total={}, n_pages_total={}, n_queries_planned={}'.format(
-            n_news_total, n_pages_total, n_queries_planned)
-    )
+    logger.debug('planned {} more queries'.format(n_queries - 1))
 
-    page_numbers = _get_random_page_numbers(n_pages_total, n_queries_planned)
+    if n_queries > 1:
+        page_numbers = _get_random_page_numbers(1, n_pages_total, n_queries)
 
-    _add_news(news, search_query, date_from, date_to,
-              page_numbers, NEWS_PER_PAGE)
-    logger.info(f'got all pages of news, count={len(news)}')
+        _add_news(news, search_query, date_from, date_to,
+                  page_numbers, NEWS_PER_PAGE)
+        logger.success(f'got rest of pages, news count={len(news)}')
 
     return news
 
@@ -85,39 +84,41 @@ def add_first_page_of_news(news: list[dict], search_query: str,
     return n_news_total, query_time
 
 
-def _get_planned_queries_count(query_time: float, n_pages_total: int,
-                               max_total_time: float, max_queries_count: int) -> int:
+def _get_queries_count(query_time: float, n_pages_total: int,
+                       max_queries_time: float, max_queries_count: int) -> int:
     """
-    Gets the number of queries planned to be sent
+    Gets total number of queries planned to be sent (first page included)
 
     :param query_time: expected time of a single query
     :type query_time: float
     :param n_pages_total: total number of pages
     :type n_pages_total: int
-    :param max_total_time: maximum time to spend on queries
-    :type max_total_time: float
+    :param max_queries_time: maximum time to spend on queries
+    :type max_queries_time: float
     :param max_queries_count: maximum number of queries to send
     :type max_queries_count: int
-    :raises ValueError: raised when any of the arguments is less than or equal to 0
     :return: number of queries planned to be sent
     :rtype: int
     """
-    if query_time <= 0 or n_pages_total <= 0 \
-            or max_total_time <= 0 or max_queries_count <= 0:
-        raise ValueError('Arguments must be greater than 0')
+    if n_pages_total <= 0 or max_queries_time <= 0 or max_queries_count <= 0:
+        return 0
 
-    n_queries_planned = math.floor(max_total_time / query_time)
+    if query_time <= 0:
+        query_time = MIN_REQUEST_INTERVAL
+
+    n_queries_planned = math.floor(max_queries_time / query_time)
     n_queries_planned = min(n_queries_planned, max_queries_count)
     n_queries_planned = min(n_queries_planned, n_pages_total)
-    n_queries_planned = max(n_queries_planned, 1)
 
     return n_queries_planned
 
 
-def _get_random_page_numbers(n_pages_total: int, n_chunks: int) -> list[int]:
+def _get_random_page_numbers(start_chunk: int, n_pages_total: int, n_chunks: int) -> list[int]:
     """
     Generates random page number for each chunk
 
+    :param start_chunk: number of first chunk
+    :type start_chunk: int
     :param n_pages_total: number of pages
     :type n_pages_total: int
     :param n_chunks: number of chunks
@@ -138,7 +139,7 @@ def _get_random_page_numbers(n_pages_total: int, n_chunks: int) -> list[int]:
     if n_chunks == 0:
         return page_numbers
 
-    for i_chunk in range(n_chunks):
+    for i_chunk in range(start_chunk, n_chunks):
         chunk_size = n_pages_total / n_chunks
         i_beg = round(chunk_size * i_chunk) + 1
         i_end = round(chunk_size * (i_chunk + 1))

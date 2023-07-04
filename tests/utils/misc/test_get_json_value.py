@@ -1,4 +1,8 @@
-from utils.misc import get_json_value
+from unittest.mock import patch
+
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from utils.misc import get_json_value
 
 
 def test_get_json_value():
@@ -16,4 +20,5 @@ def test_get_json_value():
 
     assert get_json_value({'ddd': {'b': 'c'}}, ('a')) is None
     assert get_json_value([], [1, 'b']) is None
+    assert get_json_value({}, 'a') is None
     assert get_json_value({(1, 2): 'c'}, [(1, 2)]) is None

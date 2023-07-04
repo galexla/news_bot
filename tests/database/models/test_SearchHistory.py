@@ -1,7 +1,6 @@
 from datetime import date, datetime
 
 import pytest
-from pytest_mock import mocker
 
 from database.models.SearchHistory import SearchHistory
 
@@ -17,15 +16,15 @@ def history_item():
 
 
 def test_get_recent(mocker, history_item):
-    mock_select = mocker.patch.object(SearchHistory, 'select')
+    mock_query = mocker.Mock()
+    mock_select = mocker.patch(
+        'database.models.SearchHistory.SearchHistory.select', return_value=mock_query)
     SearchHistory.get_recent(history_item.user_id)
-    mock_select.assert_called()
-
-
-def test_get_recent_order(mocker, history_item):
-    mock_order_by = mocker.patch.object(SearchHistory, 'order_by')
-    SearchHistory.get_recent(history_item.user_id)
-    mock_order_by.assert_called_with(SearchHistory.entered_date.desc())
+    mock_select.assert_called_once()
+    mock_query.where.assert_called_once_with(
+        SearchHistory.user_id == history_item.user_id)
+    mock_query.where.return_value.order_by.assert_called_once_with(
+        SearchHistory.entered_date.desc())
 
 
 def test_add_or_update_new(mocker, history_item):

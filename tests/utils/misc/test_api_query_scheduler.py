@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 import pytest
-import requests_mock
 
-from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 
 
 def test_ApiQuery():

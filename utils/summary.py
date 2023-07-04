@@ -59,7 +59,7 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     }
 
     query = ApiQuery('POST', url, headers=headers,
-                     request=request, interval=MIN_REQUEST_INTERVAL)
+                     body=request, interval=MIN_REQUEST_INTERVAL)
     response = ApiQueryScheduler.execute(query)
     sentences = get_json_value(response, ['sentences'])
 

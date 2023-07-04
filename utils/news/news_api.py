@@ -57,6 +57,34 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     return news
 
 
+def add_first_page_of_news(news: list[dict], search_query: str,
+                           date_from: date, date_to: date,
+                           news_per_page: int) -> tuple[int, float]:
+    """
+    Gets first page of news with API and adds it to news list
+
+    :param news: news list
+    :type news: list[dict]
+    :param search_query: query to search
+    :type search_query: str
+    :param date_from: start date
+    :type date_from: date
+    :param date_to: end date
+    :type date_to: date
+    :param news_per_page: number of news per page
+    :type news_per_page: int
+    :return: total news count for the query and query time
+    :rtype: tuple[int, float]
+    """
+    start_time = datetime.now()
+    n_news_total = _add_news(
+        news, search_query, date_from, date_to, [1], news_per_page)
+    query_time = (datetime.now() - start_time).total_seconds()
+    query_time = max(query_time, MIN_REQUEST_INTERVAL)
+
+    return n_news_total, query_time
+
+
 def _get_planned_queries_count(query_time: float, n_pages_total: int,
                                max_total_time: float, max_queries_count: int) -> int:
     """
@@ -86,32 +114,37 @@ def _get_planned_queries_count(query_time: float, n_pages_total: int,
     return n_queries_planned
 
 
-def add_first_page_of_news(news: list[dict], search_query: str,
-                           date_from: date, date_to: date,
-                           news_per_page: int) -> tuple[int, float]:
+def _get_random_page_numbers(n_pages_total: int, n_chunks: int) -> list[int]:
     """
-    Gets first page of news with API and adds it to news list
+    Generates random page number for each chunk
 
-    :param news: news list
-    :type news: list[dict]
-    :param search_query: query to search
-    :type search_query: str
-    :param date_from: start date
-    :type date_from: date
-    :param date_to: end date
-    :type date_to: date
-    :param news_per_page: number of news per page
-    :type news_per_page: int
-    :return: total news count for the query and query time
-    :rtype: tuple[int, float]
+    :param n_pages_total: number of pages
+    :type n_pages_total: int
+    :param n_chunks: number of chunks
+    :type n_chunks: int
+    :raises ValueError: raised if number of pages is less or equal to zero
+    :raises ValueError: raised if number of chunks is less or equal to zero
+    :return: random page numbers
+    :rtype: list[int]
     """
-    start_time = datetime.now()
-    n_news_total = _add_news(
-        news, search_query, date_from, date_to, [1], news_per_page)
-    query_time = (datetime.now() - start_time).total_seconds()
-    query_time = max(query_time, MIN_REQUEST_INTERVAL)
+    if n_pages_total <= 0:
+        raise ValueError('Number of pages must be greater than zero')
 
-    return n_news_total, query_time
+    if n_chunks <= 0:
+        raise ValueError('Number of chunks must be greater than zero')
+
+    page_numbers = []
+
+    if n_chunks == 0:
+        return page_numbers
+
+    for i_chunk in range(n_chunks):
+        chunk_size = n_pages_total / n_chunks
+        i_beg = round(chunk_size * i_chunk) + 1
+        i_end = round(chunk_size * (i_chunk + 1))
+        page_numbers.append(randint(i_beg, i_end))
+
+    return page_numbers
 
 
 def _add_news(news: list[dict], search_query: str, date_from: date, date_to: date,
@@ -197,40 +230,7 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     }
 
     query = ApiQuery('GET', url, headers=headers,
-                     request=request, interval=MIN_REQUEST_INTERVAL)
+                     body=request, interval=MIN_REQUEST_INTERVAL)
     response = ApiQueryScheduler.execute(query)
 
     return response
-
-
-def _get_random_page_numbers(n_pages_total: int, n_chunks: int) -> list[int]:
-    """
-    Generates random page number for each chunk
-
-    :param n_pages_total: number of pages
-    :type n_pages_total: int
-    :param n_chunks: number of chunks
-    :type n_chunks: int
-    :raises ValueError: raised if number of pages is less or equal to zero
-    :raises ValueError: raised if number of chunks is less or equal to zero
-    :return: random page numbers
-    :rtype: list[int]
-    """
-    if n_pages_total <= 0:
-        raise ValueError('Number of pages must be greater than zero')
-
-    if n_chunks <= 0:
-        raise ValueError('Number of chunks must be greater than zero')
-
-    page_numbers = []
-
-    if n_chunks == 0:
-        return page_numbers
-
-    for i_chunk in range(n_chunks):
-        chunk_size = n_pages_total / n_chunks
-        i_beg = round(chunk_size * i_chunk) + 1
-        i_end = round(chunk_size * (i_chunk + 1))
-        page_numbers.append(randint(i_beg, i_end))
-
-    return page_numbers

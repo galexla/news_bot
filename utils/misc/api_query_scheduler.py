@@ -116,7 +116,7 @@ class ApiQuery:
                     self._method, self._url, headers=self._headers,
                     params=self._body, timeout=self._timeout)
 
-            if response.status_code == requests.codes.ok:
+            if 200 <= response.status_code < 300:
                 logger.success('Got answer({}) from {} , answer={}'.format(
                     len(response.text), self._url, response.text[:100]))
                 try:
@@ -124,7 +124,8 @@ class ApiQuery:
                 except requests.exceptions.JSONDecodeError:
                     logger.error('JSON decoding failed')
             else:
-                logger.error(f'Got status code {response.status_code}')
+                logger.error(
+                    f'Request failed. Got status code {response.status_code}')
         except requests.RequestException:
             logger.error('Request failed')
 

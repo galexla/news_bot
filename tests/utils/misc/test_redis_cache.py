@@ -3,7 +3,9 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-import utils.misc.redis_cache as cache
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    import utils.misc.redis_cache as cache
 
 
 def test_exists():

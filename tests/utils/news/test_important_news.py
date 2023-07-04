@@ -1,7 +1,10 @@
 import os
+from unittest.mock import patch
 
-from tests.test_utils import load_news_from_dir
-from utils.news.important_news import get_important_news
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from tests.test_utils import load_news_from_dir
+    from utils.news.important_news import get_important_news
 
 
 def test_get_important_news() -> None:

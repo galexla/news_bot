@@ -1,5 +1,10 @@
-from utils.news.important_words import (_get_words_importance, get_all_words,
-                                        get_important_words)
+from unittest.mock import patch
+
+
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from utils.news.important_words import (_get_words_importance,
+                                            get_all_words, get_important_words)
 
 
 def test_get_all_words():

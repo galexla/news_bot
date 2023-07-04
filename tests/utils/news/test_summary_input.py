@@ -1,13 +1,18 @@
 import os
+from unittest.mock import patch
 
 import pytest
 
 from tests.test_utils import load_news_from_file
-from utils.news.summary_input import (_clean_news_text, _get_average_length,
-                                      _get_news_count_for_summary,
-                                      _get_news_for_summary, _get_unique_news,
-                                      _iterate_news_key, _join_news,
-                                      get_summary_input)
+
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from utils.news.summary_input import (_clean_news_text,
+                                          _get_average_length,
+                                          _get_news_count_for_summary,
+                                          _get_news_for_summary,
+                                          _get_unique_news, _iterate_news_key,
+                                          _join_news, get_summary_input)
 
 
 def test__clean_news_text():
@@ -137,7 +142,7 @@ def test__get_unique_news():
 def test_get_summary_input():
     file_name = os.path.join(os.path.dirname(__file__), 'data', '1.json')
     news = load_news_from_file(file_name)
-    
+
     news_truncated = news[:10]
     actual = get_summary_input(news_truncated, 'description')
     with open('tests/utils/news/data/10_news_summary_input.txt', 'r', encoding='utf-8') as f:

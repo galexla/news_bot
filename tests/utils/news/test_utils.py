@@ -1,6 +1,9 @@
 from datetime import date
+from unittest.mock import patch
 
-from utils.news import utils as news_utils
+with patch('database.init_db.init_db'), \
+        patch('database.init_db.create_tables'):
+    from utils.news import utils as news_utils
 
 
 def test_get_first_day_of_week() -> None:

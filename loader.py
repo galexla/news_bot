@@ -12,7 +12,7 @@ from database.init_db import create_tables, init_db
 
 loguru.logger.add(sys.stdout, level='DEBUG')
 # loguru.logger.add(sys.stdout, level='INFO')
-# loguru.logger.add('logs/error.log', level='ERROR', rotation="10 MB")
+# loguru.logger.add('logs/error.log', level='ERROR', rotation='10 MB')
 
 storage = StateRedisStorage(host=config.REDIS_HOST, port=config.REDIS_PORT,
                             db=config.REDIS_DB, password=config.REDIS_PASSWORD)

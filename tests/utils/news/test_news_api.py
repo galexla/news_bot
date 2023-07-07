@@ -84,7 +84,7 @@ def test__get_random_page_numbers():
 @patch('utils.news.news_api.get_json_value')
 def test_add_news(mock_get_json_value, mock_get_news_page):
     news = []
-    search_query = "test"
+    search_query = 'test'
     date_from = date(2023, 1, 1)
     date_to = date(2023, 12, 31)
     page_numbers = [1, 2, 3]

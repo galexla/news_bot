@@ -14,7 +14,7 @@ def message():
     msg = MagicMock()
     msg.chat.id = 1234
     msg.from_user.id = 5678
-    msg.text = "News Query"
+    msg.text = 'News Query'
     return msg
 
 
@@ -55,7 +55,7 @@ def test_bot_enter_search_query(bot_mock, message):
     bot_mock.send_message.assert_called_once()
 
 
-@pytest.mark.parametrize("invalid_inputs", [3, 5, 10])
+@pytest.mark.parametrize('invalid_inputs', [3, 5, 10])
 @patch('handlers.custom_handlers.news_search.bot')
 def test__handle_invalid_input(bot_mock, mock_manager, message, invalid_inputs):
     bot_mock.retrieve_data.return_value = mock_manager(invalid_inputs)
@@ -69,7 +69,7 @@ def test__handle_invalid_input(bot_mock, mock_manager, message, invalid_inputs):
     bot_mock.reply_to.assert_called_once()
 
 
-@pytest.mark.parametrize("invalid_inputs", [0, 1, 2])
+@pytest.mark.parametrize('invalid_inputs', [0, 1, 2])
 @patch('handlers.custom_handlers.news_search.bot')
 def test__handle_invalid_input(bot_mock, mock_manager, message, invalid_inputs):
     bot_mock.retrieve_data.return_value = mock_manager(invalid_inputs)

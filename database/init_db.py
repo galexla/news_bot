@@ -12,7 +12,7 @@ def create_tables():
     try:
         from database.models.SearchHistory import SearchHistory
     except ImportError:
-        print("Could not import models. Is the database initialized?")
+        print('Could not import models. Is the database initialized?')
         return
 
     models = [SearchHistory]

@@ -28,9 +28,7 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     :type date_from: date
     :param date_to: end date
     :type date_to: date
-    :raises ValueError: raised when search query is empty
-    :raises requests.RequestException: raised if the request fails
-    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
+    :raises ValueError: raised when search query is empty or any other parameter is invalid in subsequent calls
     :return: news
     :rtype: list[dict]
     """
@@ -47,7 +45,8 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
     logger.debug('planned {} more queries'.format(n_queries - 1))
 
     if n_queries > 1:
-        page_numbers = _get_random_page_numbers(1, n_pages_total, n_queries)
+        page_numbers = _get_random_page_numbers(
+            start_chunk=1, n_pages_total=n_pages_total, n_chunks=n_queries)
 
         _add_news(news, search_query, date_from, date_to,
                   page_numbers, NEWS_PER_PAGE)
@@ -196,8 +195,6 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
     :type date_to: date
     :raises ValueError: raised when search query is empty
     :raises ValueError: raised when page_number or page_size is out of range
-    :raises requests.RequestException: raised if the request fails
-    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: news
     :rtype: list[dict]
     """

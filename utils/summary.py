@@ -15,8 +15,6 @@ def get_summary(text: str, n_characters: int = 500) -> Optional[list]:
     :type text: str
     :param n_characters: maximum size of the summary
     :type n_characters: int
-    :raises requests.RequestException: raised if the request fails
-    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: sentences of the summary
     :rtype: Optional[list]
     """
@@ -36,8 +34,6 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     :type text: str
     :param percent: size of the summary to get
     :type percent: float
-    :raises requests.RequestException: raised if the request fails
-    :raises requests.exceptions.JSONDecodeError: raised if JSON decoding fails
     :return: sentences of the summary
     :rtype: Optional[list]
     """

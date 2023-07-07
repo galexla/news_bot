@@ -56,17 +56,22 @@ def get_results(chat_id: int, user_id: int, search_query: str,
             bot.delete_state(user_id, chat_id)
             logger.error(
                 f'Unable to get summary & top news for query: '
-                f'"{search_query}", period: {date_from} - {date_to}.')
+                f'"{search_query}", period: {date_from_str} - {date_to_str}.')
             bot.send_message(chat_id, '*Unable to get top news.*',
                              parse_mode='Markdown')
     except (requests.RequestException, requests.exceptions.JSONDecodeError,
             ValueError) as exception:
         bot.delete_state(user_id, chat_id)
-        logger.exception(exception)
         if isinstance(exception, ValueError):
+            logger.error(
+                f'Invalid data for query: "{search_query}", '
+                f'period: {date_from_str} - {date_to_str}.')
             bot.send_message(chat_id, '*Error. Invalid data.*',
                              parse_mode='Markdown')
         else:
+            logger.error(
+                f'Unable to get news for query: "{search_query}", '
+                f'period: {date_from_str} - {date_to_str}.')
             bot.send_message(chat_id, '*Some error occurred.*',
                              parse_mode='Markdown')
 

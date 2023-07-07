@@ -11,8 +11,8 @@ def history_item():
     query = 'test_query'
     date_from = date(2023, 1, 1)
     date_to = date(2023, 1, 2)
-    return SearchHistory(user_id=user_id, query=query, date_from=date_from,
-                         date_to=date_to)
+    return SearchHistory(user_id=user_id, query=query,
+                         date_from=date_from, date_to=date_to)
 
 
 def test_get_recent(mocker, history_item):

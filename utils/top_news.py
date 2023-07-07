@@ -48,7 +48,7 @@ def cache_top_news(top_news: list[dict], date_to: date) -> None:
 
 def get_cached_top_news(id: str) -> Tuple[dict | None, int]:
     """
-    Returns top news item title, url, body and ttl
+    Returns top news item and ttl
 
     :param id: news id
     :type id: str

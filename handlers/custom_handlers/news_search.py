@@ -18,7 +18,7 @@ def bot_news_start(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_news_start()')
 
@@ -36,7 +36,7 @@ def bot_enter_search_query(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_enter_search_query()')
 
@@ -62,7 +62,7 @@ def _handle_invalid_input(message: Message, error_message: str) -> None:
     :type message: Message
     :param error_message: error message
     :type error_message: str
-    :rtype: None
+    :return: None
     """
     chat_id, user_id = message.chat.id, message.from_user.id
     with bot.retrieve_data(user_id, chat_id) as data:
@@ -82,7 +82,7 @@ def _display_calendar(user_id: int) -> None:
 
     :param user_id: user id
     :type user_id: int
-    :rtype: None
+    :return: None
     """
     calendar, step = DetailedTelegramCalendar().build()
     text_msg = f'*Select week by pressing on any date.\nSelect {LSTEP[step]}*'
@@ -97,7 +97,7 @@ def bot_work_with_calendar(call: CallbackQuery) -> None:
 
     :param call: callback query
     :type call: CallbackQuery
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_work_with_calendar()')
 

@@ -38,7 +38,7 @@ def cache_top_news(top_news: list[dict], date_to: date) -> None:
     :type top_news: list[dict]
     :param date_to: end date of a news search query to calculate cache ttl
     :type date_to: date
-    :rtype: None
+    :return: None
     """
     for news_item in top_news:
         key = cache.key('top_news_item', news_item['id'])

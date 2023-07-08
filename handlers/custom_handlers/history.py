@@ -14,7 +14,7 @@ def bot_history(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_history()')
 
@@ -39,7 +39,7 @@ def bot_history_item(call: CallbackQuery) -> None:
 
     :param call: incoming callback query
     :type call: CallbackQuery
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_history_item()')
 

@@ -146,7 +146,7 @@ def set(key: str, value: Any, ex: int = None) -> None:
     :type value: Any
     :param ex: TTL in seconds
     :type ex: int
-    :rtype: None
+    :return: None
     """
     if isinstance(value, (dict, list)):
         value = json.dumps(value)

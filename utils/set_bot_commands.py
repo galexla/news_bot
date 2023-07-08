@@ -9,7 +9,7 @@ def set_default_commands(bot: TeleBot) -> None:
 
     :param bot: the bot
     :type bot: TeleBot
-    :rtype: None
+    :return: None
     """
     bot.set_my_commands(
         [BotCommand(*i) for i in DEFAULT_COMMANDS]

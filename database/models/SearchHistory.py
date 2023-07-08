@@ -69,7 +69,7 @@ class SearchHistory(Model):
         :type date_from: date
         :param date_to: date to
         :type date_to: date
-        :rtype: None
+        :return: None
         """
         history_item, created = cls.get_or_create(
             user_id=str(user_id), query=query,

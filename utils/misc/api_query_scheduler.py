@@ -49,7 +49,7 @@ class ApiQuery:
         :type interval: int
         :param timeout: request timeout, defaults to 10
         :type timeout: int, optional
-        :rtype: None
+        :return: None
         """
         self._method = method.upper()
         if self._method not in ('POST', 'GET'):
@@ -89,7 +89,7 @@ class ApiQuery:
 
         :param value: value
         :type value: datetime
-        :rtype: None
+        :return: None
         """
         self._start_time = value
 
@@ -110,7 +110,7 @@ class ApiQuery:
 
         :param value: value
         :type value: datetime
-        :rtype: None
+        :return: None
         """
         self._end_time = value
 

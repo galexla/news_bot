@@ -11,7 +11,7 @@ def bot_echo(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_echo()')
 

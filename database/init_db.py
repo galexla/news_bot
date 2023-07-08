@@ -11,7 +11,7 @@ def init_db(name, **kwargs) -> None:
     :type name: str
     :param kwargs: database connection parameters
     :type kwargs: dict
-    :rtype: None
+    :return: None
     """
     db.init(name, **kwargs)
     db.connect()
@@ -21,7 +21,7 @@ def create_tables() -> None:
     """
     Create tables in the database if they do not exist
 
-    :rtype: None
+    :return: None
     """
     try:
         from database.models.SearchHistory import SearchHistory

@@ -11,7 +11,7 @@ def bot_start(message: Message):
 
     :param message: incoming message
     :type message: Message
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_start()')
 

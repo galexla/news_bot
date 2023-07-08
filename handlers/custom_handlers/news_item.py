@@ -17,7 +17,7 @@ def bot_click_news_item(call: CallbackQuery):
 
     :param call: callback query
     :type call: CallbackQuery
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_click_news_item()')
 
@@ -45,7 +45,7 @@ def bot_news_summary(call: CallbackQuery):
 
     :param call: callback query
     :type call: CallbackQuery
-    :rtype: None
+    :return: None
     """
     logger.debug('bot_news_summary()')
 

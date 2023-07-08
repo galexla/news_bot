@@ -27,7 +27,7 @@ def get_results(chat_id: int, user_id: int, search_query: str,
     :type date_from: date
     :param date_to: date to
     :type date_to: date
-    :rtype: None
+    :return: None
     """
     date_from_str = date_from.strftime('%d.%m.%Y')
     date_to_str = date_to.strftime('%d.%m.%Y')
@@ -120,7 +120,7 @@ def _display_summary_and_top_news(chat_id: str, summary: list[str],
     :type summary: list[str]
     :param top_news: top news
     :type top_news: list[dict]
-    :rtype: None
+    :return: None
     """
     text_msg = '*Here is summary of news for the chosen period:*\n'
     text_msg = text_msg + ' '.join(summary)

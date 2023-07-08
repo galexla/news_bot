@@ -3,12 +3,26 @@ from peewee import PostgresqlDatabase
 db = PostgresqlDatabase(None)
 
 
-def init_db(name, **kwargs):
+def init_db(name, **kwargs) -> None:
+    """
+    Initialize database connection
+
+    :param name: database name
+    :type name: str
+    :param kwargs: database connection parameters
+    :type kwargs: dict
+    :rtype: None
+    """
     db.init(name, **kwargs)
     db.connect()
 
 
-def create_tables():
+def create_tables() -> None:
+    """
+    Create tables in the database if they do not exist
+
+    :rtype: None
+    """
     try:
         from database.models.SearchHistory import SearchHistory
     except ImportError:

@@ -8,6 +8,15 @@ from database.models.SearchHistory import SearchHistory
 
 
 def main(history: Iterable[SearchHistory]) -> InlineKeyboardMarkup:
+    """
+    Menu that displays search history. Each menu item is a button with search
+    query and dates in title. It keeps callback data in format 'history_{id}'.
+
+    :param history: list of SearchHistory objects
+    :type history: Iterable[SearchHistory]
+    :return: menu
+    :rtype: InlineKeyboardMarkup
+    """
     menu = InlineKeyboardMarkup()
     for item in history:
         date_from = datetime.strftime(item.date_from, '%d.%m.%y')

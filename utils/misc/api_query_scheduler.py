@@ -34,6 +34,23 @@ class ApiQuery:
 
     def __init__(self, method: str, url: str, headers: dict, body: dict,
                  interval: int, timeout: int = 10):
+        """
+        Constructor method
+
+        :param method: method type (must be POST or GET)
+        :type method: str
+        :param url: API url
+        :type url: str
+        :param headers: request headers
+        :type headers: dict
+        :param body: request body
+        :type body: dict
+        :param interval: interval between queries
+        :type interval: int
+        :param timeout: request timeout, defaults to 10
+        :type timeout: int, optional
+        :rtype: None
+        """
         self._method = method.upper()
         if self._method not in ('POST', 'GET'):
             raise ValueError('Method must be POST or GET')

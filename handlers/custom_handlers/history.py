@@ -34,6 +34,13 @@ def bot_history(message: Message) -> None:
 # TODO: allow only when state is None or state = NewsState.got_news ?
 @bot.callback_query_handler(func=lambda call: call.data.startswith('history_'), state=None)
 def bot_history_item(call: CallbackQuery) -> None:
+    """
+    Handles the history_* callback query
+
+    :param call: incoming callback query
+    :type call: CallbackQuery
+    :rtype: None
+    """
     logger.debug('bot_history_item()')
 
     id = int(call.data[8:])

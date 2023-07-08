@@ -156,6 +156,7 @@ class ApiQueryScheduler:
     Attributes:
         from_start (bool): whether to calculate time from a query start or from its end
     """
+
     from_start: bool = True
 
     @classmethod

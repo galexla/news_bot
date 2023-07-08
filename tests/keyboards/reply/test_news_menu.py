@@ -33,5 +33,5 @@ def test_news_item():
     assert result.keyboard[0][0].text == 'Get summary'
     assert result.keyboard[0][0].callback_data == f'summary_{news_id}'
     assert isinstance(result.keyboard[1][0], InlineKeyboardButton)
-    assert result.keyboard[1][0].text == 'Read article'
+    assert result.keyboard[1][0].text == 'Read the article'
     assert result.keyboard[1][0].url == url

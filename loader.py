@@ -4,22 +4,20 @@ import loguru
 import redis
 from telebot import TeleBot
 from telebot import logger as telebot_logger
-from telebot import logging
 from telebot.storage import StateRedisStorage
 
 from config_data import config
 from database.init_db import create_tables, init_db
 
-loguru.logger.add(sys.stdout, level='DEBUG')
-# loguru.logger.add(sys.stdout, level='INFO')
-# loguru.logger.add('logs/error.log', level='ERROR', rotation='10 MB')
+loguru.logger.add(sys.stdout, level=config.LOG_LEVEL)
+loguru.logger.add('logs/app.log', level=config.LOG_LEVEL, rotation='30 MB')
+loguru.logger.add('logs/error.log', level='ERROR', rotation='30 MB')
 
 storage = StateRedisStorage(host=config.REDIS_HOST, port=config.REDIS_PORT,
                             db=config.REDIS_DB, password=config.REDIS_PASSWORD)
 
 bot = TeleBot(token=config.BOT_TOKEN, state_storage=storage)
-telebot_logger.setLevel(logging.INFO)
-# telebot_logger.setLevel(logging.DEBUG)
+telebot_logger.setLevel(config.LOG_LEVEL_BOT)
 
 redis_connection = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT,
                                db=config.REDIS_DB, password=config.REDIS_PASSWORD,

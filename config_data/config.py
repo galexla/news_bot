@@ -1,3 +1,4 @@
+import logging
 import os
 from dotenv import find_dotenv, load_dotenv
 
@@ -9,6 +10,8 @@ else:
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 RAPID_API_KEY = os.getenv('RAPID_API_KEY')
+
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
@@ -22,7 +25,16 @@ POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 DROP_TABLES = os.getenv('DROP_TABLES', 'False').lower() == 'true'
 
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+loguru_levels = set('TRACE DEBUG INFO SUCCESS WARNING ERROR CRITICAL'.split())
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
+LOG_LEVEL = LOG_LEVEL if LOG_LEVEL in loguru_levels else 'INFO'
+
+logging_levels = {'CRITICAL': logging.CRITICAL, 'ERROR': logging.ERROR,
+                  'WARNING': logging.WARNING, 'INFO': logging.INFO,
+                  'DEBUG': logging.DEBUG, 'NOTSET': logging.NOTSET}
+LOG_LEVEL_BOT = logging_levels.get(
+    os.getenv('LOG_LEVEL_BOT', 'INFO').upper(), logging.INFO)
+
 
 DEFAULT_COMMANDS = (
     ('start', 'Start bot'),

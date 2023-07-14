@@ -2,6 +2,8 @@ from typing import Iterable
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from config_data import config
+
 
 def main(news: Iterable[dict]) -> InlineKeyboardMarkup:
     """
@@ -15,8 +17,8 @@ def main(news: Iterable[dict]) -> InlineKeyboardMarkup:
     """
     menu_ = InlineKeyboardMarkup()
     for item in news:
-        id = item['id']
-        title = item['title'].strip()
+        id = item[config.NEWS_ID]
+        title = item[config.NEWS_TITLE].strip()
         data = f'news_{id}'
         menu_.add(InlineKeyboardButton(text=title, callback_data=data))
 

@@ -2,7 +2,9 @@ import json
 import os
 from unittest.mock import patch
 
+from config_data import config
 from tests import test_utils
+
 with patch('database.init_db.init_db'), \
         patch('database.init_db.create_tables'):
     from utils.news import tf_idf
@@ -12,7 +14,7 @@ def get_news_test_data() -> dict[str]:
     """Gets news from json files in data directory and page size"""
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
     news = test_utils.load_news_from_dir(data_dir)
-    texts = {item['id']: item['body'] for item in news}
+    texts = {item['id']: item[config.NEWS_BODY] for item in news}
     return texts
 
 

@@ -1,10 +1,20 @@
 # News bot
 
 ## Prerequisites
-Before running the bot, you need to have a `data` and a `logs` folder in the root of your project with write access to it. Redis and PostgreSQL data and logs are kept there.
+Before running the bot, you need to have:
+* A `data` and a `logs` folder in the root of your project with write access to it. Redis and PostgreSQL data and logs are kept there.
+* You will also need to subscribe to a summarization API: https://text-analysis12.p.rapidapi.com/summarize-text/api/v1.1
+* And to a news API: https://worldnewsapi.com/
 
 ## Configuration
-Rename `.env.example` to `.env` and provide your Telegram bot token, RapidAPI key, and password for Redis and PostgreSQL. You can also edit other values in this file.
+Rename `.env.example` to `.env` and provide:
+* `BOT_TOKEN` - your Telegram bot token,
+* `RAPID_API_KEY` - RapidAPI key,
+* `NEWS_API_KEY` - WorldNews API key,
+* `REDIS_PASSWORD` - password for Redis
+* `POSTGRES_PASSWORD` - password for PostgreSQL.
+
+You can also edit other values in `.env` file.
 
 ## Running bot
 `docker compose up`
@@ -15,7 +25,7 @@ To debug set the `DEBUG` variable in your `.env` file to `True`. Logs are kept i
 ## Running tests
 `pytest tests`
 
-## Bot usage
+## Bot user commands
 * `/start` - starts or restarts the bot
 * `/help` - displays help
 * `/news` - gets news based on your search query and date range (one week selected). Then displays a summary of this news and the top 5 news in the week. You can click on any of these news and:

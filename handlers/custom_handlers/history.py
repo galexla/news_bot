@@ -31,7 +31,6 @@ def bot_history(message: Message) -> None:
                          reply_markup=menu, parse_mode='Markdown')
 
 
-# TODO: allow only when state is None or state = NewsState.got_news ?
 @bot.callback_query_handler(func=lambda call: call.data.startswith('history_'), state=None)
 def bot_history_item(call: CallbackQuery) -> None:
     """

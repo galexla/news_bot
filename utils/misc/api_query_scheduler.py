@@ -15,11 +15,11 @@ class ApiQuery:
         url (str): API url
         headers (dict): request headers
         body (dict): request body
-        interval (int): interval between queries
+        interval (float): interval between queries in seconds
         timeout (int): request timeout
 
     Attributes:
-        interval (int): interval between queries
+        interval (float): interval between queries in seconds
         start_time (datetime or None): query start time, None until request is made
         end_time (datetime or None): query end time, None until request is made
         _method (str): method type (POST or GET)
@@ -33,7 +33,7 @@ class ApiQuery:
     """
 
     def __init__(self, method: str, url: str, headers: dict, body: dict,
-                 interval: int, timeout: int = 10):
+                 interval: float, timeout: int = 10):
         """
         Constructor method
 
@@ -45,8 +45,8 @@ class ApiQuery:
         :type headers: dict
         :param body: request body
         :type body: dict
-        :param interval: interval between queries
-        :type interval: int
+        :param interval: interval between queries in seconds
+        :type interval: float
         :param timeout: request timeout, defaults to 10
         :type timeout: int, optional
         :return: None
@@ -143,8 +143,12 @@ class ApiQuery:
             else:
                 logger.error(
                     f'Request failed. Got status code {response.status_code}')
-        except requests.RequestException:
-            logger.error('Request failed')
+        except requests.RequestException as exc:
+            try:
+                msg = ', '.join(map(str, exc.args))
+            except Exception:
+                msg = str(exc.strerror) if exc.strerror else 'Unknown error'
+            logger.error('Request failed: ' + msg)
 
         return None
 

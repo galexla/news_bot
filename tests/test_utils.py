@@ -2,6 +2,8 @@ import json
 import os
 import re
 
+from config_data import config
+
 
 def load_news_from_dir(dirname: str) -> list[dict]:
     """
@@ -33,8 +35,10 @@ def load_news_from_file(filename: str) -> list[dict]:
     """
     with open(filename, 'r') as file:
         text = file.read()
-        news_item = json.loads(text)
-        return news_item['value']
+        news = json.loads(text)
+        for item in news['value']:
+            item[config.NEWS_BODY] = item.pop('body', '')
+        return news.pop('value', [])
 
 
 def create_news_index(news: list[dict]) -> dict:
@@ -48,6 +52,6 @@ def create_news_index(news: list[dict]) -> dict:
     """
     news_index = {}
     for news_item in news:
-        news_index[news_item['id']] = news_item
+        news_index[news_item[config.NEWS_ID]] = news_item
 
     return news_index

@@ -29,5 +29,3 @@ init_db(config.POSTGRES_DB, host=config.POSTGRES_HOST,
         port=config.POSTGRES_PORT)
 
 create_tables()
-
-from database.models import SearchHistory

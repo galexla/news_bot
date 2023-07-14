@@ -3,6 +3,7 @@ import re
 from loguru import logger
 from telebot.types import CallbackQuery
 
+from config_data import config
 from keyboards.reply import news_menu
 from loader import bot
 from utils import top_news
@@ -26,7 +27,7 @@ def bot_click_news_item(call: CallbackQuery):
 
     news_item, _ = top_news.get_cached_top_news(news_id)
     if news_item:
-        title, url = news_item['title'], news_item['url']
+        title, url = news_item[config.NEWS_TITLE], news_item[config.NEWS_URL]
         bot.send_message(chat_id, f'*{title}*',
                          reply_markup=news_menu.news_item(news_id, url),
                          parse_mode='Markdown')
@@ -55,10 +56,10 @@ def bot_news_summary(call: CallbackQuery):
     news_item, ttl = top_news.get_cached_top_news(news_id)
     if news_item:
         summary = cache.get_set(cache.key('article_summary', news_id), ttl,
-                                get_summary, news_item['body'])
+                                get_summary, news_item[config.NEWS_BODY])
         summary = ' '.join(summary)
 
-        title = news_item['title']
+        title = news_item[config.NEWS_TITLE]
         text_msg = f'*Summary of article "{title}"*:\n{summary}'
         bot.send_message(chat_id, text_msg, parse_mode='Markdown')
     else:

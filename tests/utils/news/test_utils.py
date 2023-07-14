@@ -139,6 +139,9 @@ def test_date_from_to_str() -> str:
     expected = date_from.strftime('%Y-%m-%dT00:00:00')
     assert news_utils.date_from_to_str(date_from) == expected
 
+    expected = date_from.strftime('%Y-%m-%d 00:00:00')
+    assert news_utils.date_from_to_str(date_from, False) == expected
+
 
 def test_date_to_to_str() -> str:
     """
@@ -147,3 +150,6 @@ def test_date_to_to_str() -> str:
     date_to = date(2020, 1, 1)
     expected = date_to.strftime('%Y-%m-%dT23:59:59')
     assert news_utils.date_to_to_str(date_to) == expected
+
+    expected = date_to.strftime('%Y-%m-%d 23:59:59')
+    assert news_utils.date_to_to_str(date_to, False) == expected

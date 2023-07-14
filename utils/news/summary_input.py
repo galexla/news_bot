@@ -2,8 +2,11 @@ import re
 from random import randint
 from typing import Callable, Iterator
 
+from config_data import config
+
 SUMMARY_MIN_NEWS_N = 50
 SUMMARY_MAX_INPUT = 50000
+UNIQUE_KEY = config.NEWS_BODY
 
 
 def get_summary_input(news: list[dict], key: str) -> str:
@@ -37,16 +40,29 @@ def _get_unique_news(news: list[dict]) -> list[dict]:
     """
     result = []
     added_news = set()
-    pattern, empty_str = r'[\W\d]+', ''
     for item in news:
-        body = re.sub(pattern, empty_str, item['body']).lower()
-        description = re.sub(pattern, empty_str, item['description']).lower()
-        if body not in added_news and description not in added_news:
-            added_news.add(body)
-            added_news.add(description)
+        text_value = _remove_symbols_numbers(item[UNIQUE_KEY])
+        if text_value != '' and text_value not in added_news:
+            added_news.add(text_value)
             result.append(item)
 
     return result
+
+
+def _remove_symbols_numbers(text: str) -> str:
+    """
+    Removes symbols and numbers from text
+
+    :param text: text
+    :type text: str
+    :return: text without symbols and numbers
+    :rtype: str
+    """
+    pattern = r'[\W\d]+'
+    empty_str = ''
+    text = re.sub(pattern, empty_str, text)
+
+    return text.lower()
 
 
 def _get_average_length(news: list, key: str) -> int:
@@ -100,7 +116,7 @@ def _get_news_count_for_summary(news: list[dict], average_length: int) -> int:
     if average_length <= 0:
         raise ValueError('Average length must be greater than zero')
 
-    if len(news) < SUMMARY_MIN_NEWS_N:
+    if len(news) <= SUMMARY_MIN_NEWS_N:
         return len(news)
 
     news_count = round(SUMMARY_MAX_INPUT / average_length)

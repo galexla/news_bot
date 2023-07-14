@@ -13,8 +13,8 @@ with patch('database.init_db.init_db'), \
 def mock_news_page(news, page_num, page_size):
     news_part = news[(page_num - 1) * page_size: page_num * page_size]
     page = {
-        'totalCount': len(news),
-        'value': news_part
+        'available': len(news),
+        'news': news_part
     }
     return page
 
@@ -27,7 +27,7 @@ def get_news_test_data(n_pages) -> tuple[list[dict], int]:
     return news, page_size
 
 
-@patch('utils.news.news_api.NEWS_PER_PAGE', 10)
+@patch('utils.news.news_api.PAGE_SIZE', 10)
 @patch('utils.news.news_api._get_news_page')
 def test_get_news(mock_get_news_page):
     news, page_size = get_news_test_data(3)
@@ -89,7 +89,7 @@ def test_add_news(mock_get_json_value, mock_get_news_page):
     date_to = date(2023, 12, 31)
     page_numbers = [1, 2, 3]
     news_per_page = 10
-    mock_page = {'value': [{'id': 1}, {'id': 2}], 'totalCount': '2'}
+    mock_page = {'news': [{'id': 1}, {'id': 2}], 'available': '2'}
     mock_get_news_page.return_value = mock_page
     mock_get_json_value.side_effect = lambda json_obj, keys: json_obj[keys[0]]
 
@@ -101,13 +101,13 @@ def test_add_news(mock_get_json_value, mock_get_news_page):
     mock_get_news_page.n_calls == 3
     mock_get_news_page.assert_called_with(
         search_query, page_numbers[-1], news_per_page, date_from, date_to)
-    mock_get_json_value.assert_called_with(mock_page, ['totalCount'])
+    mock_get_json_value.assert_called_with(mock_page, ['available'])
 
 
 @patch('utils.news.news_api.config', autospec=True)
 def test__get_news_page(config_mock, requests_mock):
-    config_mock.RAPID_API_KEY = '1234567890'
-    url = 'https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI'
+    config_mock.NEWS_API_KEY = '1234567890'
+    url = 'https://api.worldnewsapi.com/search-news'
     method = 'GET'
     search_query = 'test'
     page_number = 1
@@ -116,17 +116,15 @@ def test__get_news_page(config_mock, requests_mock):
     date_to = date(2020, 1, 2)
 
     request = {
-        'q': search_query,
-        'pageNumber': page_number,
-        'pageSize': page_size,
-        'autoCorrect': 'true',
-        'fromPublishedDate': date_from_to_str(date_from),
-        'toPublishedDate': date_to_to_str(date_to),
-    }
-
-    headers = {
-        'X-RapidAPI-Key': config_mock.RAPID_API_KEY,
-        'X-RapidAPI-Host': 'contextualwebsearch-websearch-v1.p.rapidapi.com'
+        'api-key': config_mock.NEWS_API_KEY,
+        'text': search_query,
+        'language': 'en',
+        'earliest-publish-date': date_from_to_str(date_from, True),
+        'latest-publish-date': date_to_to_str(date_to, True),
+        'sort': 'publish-time',
+        'sort-direction': 'DESC',
+        'offset': (page_number - 1) * page_size,
+        'number': page_size
     }
 
     expected_response = [
@@ -141,7 +139,7 @@ def test__get_news_page(config_mock, requests_mock):
     ]
 
     requests_mock.register_uri(
-        method, url, headers=headers, json=expected_response, status_code=200)
+        method, url, json=expected_response, status_code=200)
 
     start_time = datetime.utcnow()
     response = news_api._get_news_page(search_query, page_number, page_size,
@@ -153,8 +151,6 @@ def test__get_news_page(config_mock, requests_mock):
     assert requests_mock.call_count == 1
     assert requests_mock.last_request.method == method
     assert requests_mock.last_request.url.startswith(url)
-    assert set(headers.keys()).issubset(
-        set(requests_mock.last_request.headers.keys()))
     assert set(map(str.lower, request.keys())).issubset(
         set(requests_mock.last_request.qs.keys()))
     assert requests_mock.last_request.timeout == 10

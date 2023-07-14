@@ -87,26 +87,32 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
 
 
 @functools.lru_cache(maxsize=128)
-def date_from_to_str(date_from: date) -> str:
+def date_from_to_str(date_from: date, addT: bool = True) -> str:
     """
-    Converts date to string in format %Y-%m-%dT00:00:00
+    Converts 'from' date to string in format '%Y-%m-%dT00:00:00' or '%Y-%m-%d 00:00:00'
 
     :param date_from: date
     :type date_from: date
-    :return: date in format %Y-%m-%dT00:00:00
+    :param addT: add 'T' between date and time
+    :type addT: bool
+    :return: string representation of date
     :rtype: str
     """
-    return date_from.strftime('%Y-%m-%dT00:00:00')
+    char = 'T' if addT else ' '
+    return date_from.strftime(f'%Y-%m-%d{char}00:00:00')
 
 
 @functools.lru_cache(maxsize=128)
-def date_to_to_str(date_to: date) -> str:
+def date_to_to_str(date_to: date, addT: bool = True) -> str:
     """
-    Converts date to string in format %Y-%m-%dT23:59:59
+    Converts 'to' date to string in format '%Y-%m-%dT23:59:59' or '%Y-%m-%d 23:59:59'
 
     :param date_to: date
     :type date_to: date
-    :return: date in format %Y-%m-%dT23:59:59
+    :param addT: add 'T' between date and time
+    :type addT: bool
+    :return: string representation of date
     :rtype: str
     """
-    return date_to.strftime('%Y-%m-%dT23:59:59')
+    char = 'T' if addT else ' '
+    return date_to.strftime(f'%Y-%m-%d{char}23:59:59')

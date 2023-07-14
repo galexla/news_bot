@@ -1,9 +1,12 @@
 from datetime import date
 from typing import Tuple
 
+from config_data import config
 from utils.misc import redis_cache as cache
 from utils.news.tf_idf import most_similar_news_ids
 from utils.news.utils import important_news_to_texts
+
+TEXT_KEYS = (config.NEWS_TITLE, config.NEWS_BODY)
 
 
 def get_top_news(sentences: list[str], important_news: dict[dict],
@@ -20,8 +23,7 @@ def get_top_news(sentences: list[str], important_news: dict[dict],
     :return: top 5 news
     :rtype: list[dict]
     """
-    text_keys = ('title', 'description', 'body')
-    news_texts = important_news_to_texts(important_news, text_keys)
+    news_texts = important_news_to_texts(important_news, TEXT_KEYS)
     ids = most_similar_news_ids(sentences, news_texts)
     top_news = []
     for _, news_id in ids.items():
@@ -41,7 +43,7 @@ def cache_top_news(top_news: list[dict], date_to: date) -> None:
     :return: None
     """
     for news_item in top_news:
-        key = cache.key('top_news_item', news_item['id'])
+        key = cache.key('top_news_item', news_item[config.NEWS_ID])
         if not cache.exists(key):
             cache.set(key, news_item, ex=cache.calc_ttl(date_to))
 

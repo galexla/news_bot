@@ -8,8 +8,8 @@ else:
     load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-
 RAPID_API_KEY = os.getenv('RAPID_API_KEY')
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
@@ -34,6 +34,11 @@ logging_levels = {'CRITICAL': logging.CRITICAL, 'ERROR': logging.ERROR,
                   'DEBUG': logging.DEBUG, 'NOTSET': logging.NOTSET}
 LOG_LEVEL_BOT = logging_levels.get(
     os.getenv('LOG_LEVEL_BOT', 'INFO').upper(), logging.INFO)
+
+NEWS_ID = os.getenv('NEWS_ID')
+NEWS_TITLE = os.getenv('NEWS_TITLE')
+NEWS_BODY = os.getenv('NEWS_BODY')
+NEWS_URL = os.getenv('NEWS_URL')
 
 
 DEFAULT_COMMANDS = (

@@ -1,12 +1,13 @@
 from datetime import date
 from typing import Tuple
 
+from config_data import config
 from utils.misc import redis_cache as cache
 from utils.news import news_api
 from utils.news.important_news import get_important_news
 from utils.news.summary_input import get_summary_input
 
-TEXT_KEY = 'description'
+
 REDIS_PREFIXES = ('news_count', 'summary_input', 'important_news')
 
 
@@ -38,12 +39,12 @@ def get_news_semimanufactures(search_query: str, date_from: date,
     summary_input = cache.get_set(
         cache.key_query('summary_input', search_query, date_from, date_to),
         cache.calc_ttl(date_to),
-        get_summary_input, news, TEXT_KEY)
+        get_summary_input, news, config.NEWS_TITLE)
 
     important_news = cache.get_set(
         cache.key_query('important_news', search_query, date_from, date_to),
         cache.calc_ttl(date_to),
-        get_important_news, news, TEXT_KEY)
+        get_important_news, news, config.NEWS_BODY)
 
     return news_count, summary_input, important_news
 

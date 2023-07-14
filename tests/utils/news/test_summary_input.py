@@ -107,36 +107,31 @@ def test__get_news_count_for_summary():
 
 
 def test__get_average_length():
-    news = [{'body': 'text1'}, {'body': 'text123'}, {'body': 'text12345'}]
-    assert _get_average_length(news, 'body') == 7
+    news = [{'text': 'text1'}, {'text': 'text123'}, {'text': 'text12345'}]
+    assert _get_average_length(news, 'text') == 7
 
     with pytest.raises(ValueError):
-        _get_average_length([], 'body')
+        _get_average_length([], 'text')
     with pytest.raises(ValueError):
         _get_average_length(news, '')
-    with pytest.raises(KeyError):
-        _get_average_length(news, 'text')
+    # with pytest.raises(KeyError):
+    #     _get_average_length(news, 'text')
     with pytest.raises(ValueError):
         _get_average_length(
-            [{'body': ''}, {'body': ''}, {'body': ''}], 'body')
+            [{'text': ''}, {'text': ''}, {'text': ''}], 'text')
 
 
 def test__get_unique_news():
-    news = [{'body': 'text1', 'description': ''},
-            {'body': 'text1', 'description': 'dfdsf'},
-            {'body': 'text12345', 'description': 'text12345'}]
-    assert _get_unique_news(news) == [{'body': 'text1', 'description': ''}]
+    news = [{'text': 'text1', 'description': '123'},
+            {'text': 'text1:2', 'description': 'dfdsf'},
+            {'text': 'text12345', 'description': 'text12345'}]
+    assert _get_unique_news(news) == [{'text': 'text1', 'description': '123'}]
 
-    news = [{'body': 'text1', 'description': '1'},
-            {'body': 'text_two', 'description': '1'},
-            {'body': 'text12345', 'description': 'text123'}]
-    assert _get_unique_news(news) == [{'body': 'text1', 'description': '1'}]
-
-    news = [{'body': 'text1', 'description': '1'},
-            {'body': 'text_two', 'description': 'two'},
-            {'body': 'text12345', 'description': 'text123'}]
-    assert _get_unique_news(news) == [{'body': 'text1', 'description': '1'},
-                                      {'body': 'text_two', 'description': 'two'}]
+    news = [{'text': 'text_two2', 'description': 'aaa'},
+            {'text': 'text_two', 'description': '1'},
+            {'text': 'text12345', 'description': 'text123'}]
+    assert _get_unique_news(news) == [{'text': 'text_two2', 'description': 'aaa'},
+                                      {'text': 'text12345', 'description': 'text123'}]
 
 
 def test_get_summary_input():

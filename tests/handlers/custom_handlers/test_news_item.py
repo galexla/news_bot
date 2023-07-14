@@ -37,7 +37,7 @@ def callback_query2():
 
 @pytest.fixture
 def news_item():
-    return {'id': '123', 'title': 'test title', 'url': 'test_url', 'body': 'test body'}
+    return {'id': '123', 'title': 'test title', 'url': 'test_url', 'text': 'test body'}
 
 
 @patch('handlers.custom_handlers.news_item.bot')

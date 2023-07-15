@@ -13,9 +13,7 @@ from utils.news.utils import date_from_to_str, date_to_to_str
 MIN_REQUEST_INTERVAL = 1
 MAX_TOTAL_QUERIES_TIME = 6
 PAGE_SIZE = 100
-# TODO: change to 2 for manual testing
-MAX_QUERIES_COUNT = 7
-# MAX_QUERIES_COUNT = 2
+MAX_QUERIES_COUNT = 7  # change to 2 for manual testing
 MIN_PAGE_SIZE = 10
 MAX_PAGE_SIZE = 100
 

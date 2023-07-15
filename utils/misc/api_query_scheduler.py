@@ -48,7 +48,8 @@ class ApiQuery:
         :param interval: interval between queries in seconds
         :type interval: float
         :param timeout: request timeout, defaults to 10
-        :type timeout: int, optional
+        :type timeout: int
+        :raises ValueError: if method is not POST or GET
         :return: None
         """
         self._method = method.upper()

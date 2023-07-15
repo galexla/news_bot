@@ -6,7 +6,7 @@ from loader import bot
 
 
 @bot.message_handler(commands=['help'])
-def bot_help(message: Message):
+def bot_help(message: Message) -> None:
     """
     Handles help message and show a list of commands
 

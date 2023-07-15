@@ -5,7 +5,7 @@ from loader import bot
 
 
 @bot.message_handler(commands=['start'])
-def bot_start(message: Message):
+def bot_start(message: Message) -> None:
     """
     Starts the bot
 

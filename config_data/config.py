@@ -35,10 +35,11 @@ logging_levels = {'CRITICAL': logging.CRITICAL, 'ERROR': logging.ERROR,
 LOG_LEVEL_BOT = logging_levels.get(
     os.getenv('LOG_LEVEL_BOT', 'INFO').upper(), logging.INFO)
 
-NEWS_ID = os.getenv('NEWS_ID')
-NEWS_TITLE = os.getenv('NEWS_TITLE')
-NEWS_BODY = os.getenv('NEWS_BODY')
-NEWS_URL = os.getenv('NEWS_URL')
+
+NEWS_ID = 'id'
+NEWS_TITLE = 'title'
+NEWS_BODY = 'text'
+NEWS_URL = 'url'
 
 
 DEFAULT_COMMANDS = (

@@ -153,4 +153,4 @@ def test__get_news_page(config_mock, requests_mock):
     assert requests_mock.last_request.url.startswith(url)
     assert set(map(str.lower, request.keys())).issubset(
         set(requests_mock.last_request.qs.keys()))
-    assert requests_mock.last_request.timeout == 10
+    assert requests_mock.last_request.timeout == 60

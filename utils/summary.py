@@ -20,7 +20,7 @@ def get_summary(text: str, n_characters: int = 500) -> Optional[list]:
     """
     n_characters = max(0, n_characters)
     if len(text) <= n_characters:
-        return text
+        return [text]
 
     percent = round(n_characters / len(text) * 100, 3)
     return get_summary_percent(text, percent)

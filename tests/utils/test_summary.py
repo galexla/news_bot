@@ -38,7 +38,7 @@ def test_get_summary_percent(mocked_apiquery, mocked_scheduler, mocked_json_valu
 def test_get_summary_less_than_n_characters():
     test_string = 'This is a test string.'
     result = get_summary(test_string, 50)
-    assert result == test_string
+    assert result == [test_string]
 
 
 @patch('utils.summary.get_summary_percent')

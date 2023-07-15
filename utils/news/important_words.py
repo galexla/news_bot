@@ -5,10 +5,6 @@ from typing import Iterable
 
 import wordfreq
 
-MINUS_INF = float('-inf')
-RARE_WORD_MULT = 0.7
-RARE_WORD_BASE_IDX = 3
-
 
 def get_important_words(texts: Iterable[str] | str, words_percent: int = 25) -> dict:
     """
@@ -100,32 +96,13 @@ def _get_words_importance(all_words: list[str]) -> dict[str, float]:
     counter = Counter(all_words)
 
     for word, count in counter.items():
-        if word in important_words:
-            continue
-
         frequency = count / n_words
         usual_frequency = wordfreq.word_frequency(
             word, 'en', wordlist='best', minimum=0.0)
-        importance = math.log2(
-            frequency / usual_frequency) if usual_frequency != 0 else MINUS_INF
 
-        important_words[word] = importance
-
-    # max_importance = max(important_words.values())
-    # max_importance = max(max_importance, 1)
-    # for word in important_words.keys():
-    #     if important_words[word] == MINUS_INF:
-    #         important_words[word] = max_importance * 0.4
-
-    importances = sorted(important_words.values(), reverse=True)
-    if len(importances) < RARE_WORD_BASE_IDX + 1:
-        importances_of_unknown = importances[-1] * RARE_WORD_MULT
-    else:
-        importances_of_unknown = importances[RARE_WORD_BASE_IDX] * \
-            RARE_WORD_MULT
-
-    for word in important_words.keys():
-        if important_words[word] == MINUS_INF:
-            important_words[word] = importances_of_unknown
+        if usual_frequency > 0:
+            # importance = frequency * math.log(1 / usual_frequency)
+            importance = frequency / usual_frequency + 1.000001
+            important_words[word] = math.log(importance)
 
     return important_words

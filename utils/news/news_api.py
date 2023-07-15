@@ -232,18 +232,8 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
         'number': page_size
     }
 
-    # Free worldnewsapi.com API query can sometimes execute for 60 seconds
-    # and sometimes only 3. That's why we try 2 times with 10 seconds timeout.
-    # for _ in range(2):
-    #     interval = randint(400, 1000) / 100
-    #     timeout = randint(7, 10)
-    #     query = ApiQuery('GET', url, headers=None, body=request,
-    #                      interval=interval, timeout=timeout)
-    #     response = ApiQueryScheduler.execute(query)
-    #     if response is not None:
-    #         break
     query = ApiQuery('GET', url, headers=None, body=request,
-                        interval=MIN_REQUEST_INTERVAL, timeout=10)
+                     interval=MIN_REQUEST_INTERVAL, timeout=60)
     response = ApiQueryScheduler.execute(query)
 
     if response is None:

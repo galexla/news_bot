@@ -32,7 +32,7 @@ def get_top_news(sentences: list[str], important_news: dict[dict],
     return top_news[:n_max]
 
 
-def cache_top_news(top_news: list[dict], date_to: date) -> None:
+def cache_top_news_items(top_news: list[dict], date_to: date) -> None:
     """
     Caches top news
 

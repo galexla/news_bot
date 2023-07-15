@@ -53,9 +53,9 @@ def test_get_results(get_summary_and_top_news_mock, get_news_semimanufactures_mo
 @patch('utils.misc.redis_cache.redis_connection')
 @patch('handlers.custom_handlers.news_results.get_summary', return_value='summary')
 @patch('handlers.custom_handlers.news_results.get_top_news')
-@patch('handlers.custom_handlers.news_results.cache_top_news')
+@patch('handlers.custom_handlers.news_results.cache_top_news_items')
 def test_get_summary_and_top_news(
-        cache_top_news_mock, get_top_news_mock, get_summary_mock,
+        cache_top_news_items_mock, get_top_news_mock, get_summary_mock,
         mock_redis_connection, date_range, top_news):
     mock_redis_connection.exists.return_value = False
     get_top_news_mock.return_value = top_news
@@ -65,7 +65,7 @@ def test_get_summary_and_top_news(
         'test_query', *date_range, 'summary_input', important_news)
     assert get_summary_mock.call_count == 1
     assert get_top_news_mock.call_count == 1
-    assert cache_top_news_mock.call_count == 1
+    assert cache_top_news_items_mock.call_count == 1
     assert result == ('summary', [{'id': 1, 'title': 'title1'}])
 
 

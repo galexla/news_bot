@@ -9,7 +9,7 @@ from states.news_state import NewsState
 from utils.misc import redis_cache as cache
 from utils.news.news import get_news_semimanufactures
 from utils.summary import get_summary
-from utils.top_news import cache_top_news, get_top_news
+from utils.top_news import cache_top_news_items, get_top_news
 
 
 def get_results(chat_id: int, user_id: int, search_query: str,
@@ -104,7 +104,7 @@ def _get_summary_and_top_news(search_query: str, date_from: date, date_to: date,
         cache.calc_ttl(date_to),
         get_top_news, summary, important_news)
 
-    cache_top_news(top_news, date_to)
+    cache_top_news_items(top_news, date_to)
 
     return summary, top_news
 

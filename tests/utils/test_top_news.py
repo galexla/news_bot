@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 with patch('database.init_db.init_db'), \
         patch('database.init_db.create_tables'):
-    from utils.top_news import cache_top_news, get_cached_top_news, get_top_news
+    from utils.top_news import (cache_top_news_items, get_cached_top_news,
+                                get_top_news)
 
 
 @patch('utils.top_news.important_news_to_texts')
@@ -27,13 +28,13 @@ def test_get_top_news(mock_most_similar_news_ids, mock_important_news_to_texts):
 @patch('utils.top_news.cache.exists')
 @patch('utils.top_news.cache.set')
 @patch('utils.top_news.cache.calc_ttl')
-def test_cache_top_news(mock_calc_ttl, mock_set, mock_exists, mock_key):
+def test_cache_top_news_items(mock_calc_ttl, mock_set, mock_exists, mock_key):
     top_news = [{'id': 1, 'news': 'news 1'}, {'id': 2, 'news': 'news 2'}]
     date_to = date.today()
     mock_key.return_value = 'key'
     mock_exists.return_value = False
 
-    cache_top_news(top_news, date_to)
+    cache_top_news_items(top_news, date_to)
 
     assert mock_set.call_count == len(top_news)
 

@@ -26,21 +26,19 @@ POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 DROP_TABLES = os.getenv('DROP_TABLES', 'False').lower() == 'true'
 
 loguru_levels = set('TRACE DEBUG INFO SUCCESS WARNING ERROR CRITICAL'.split())
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
-LOG_LEVEL = LOG_LEVEL if LOG_LEVEL in loguru_levels else 'INFO'
+LOG_LEVEL_APP = os.getenv('LOG_LEVEL_APP', 'INFO').upper()
+LOG_LEVEL_APP = LOG_LEVEL_APP if LOG_LEVEL_APP in loguru_levels else 'INFO'
 
-logging_levels = {'CRITICAL': logging.CRITICAL, 'ERROR': logging.ERROR,
-                  'WARNING': logging.WARNING, 'INFO': logging.INFO,
-                  'DEBUG': logging.DEBUG, 'NOTSET': logging.NOTSET}
-LOG_LEVEL_BOT = logging_levels.get(
-    os.getenv('LOG_LEVEL_BOT', 'INFO').upper(), logging.INFO)
+logging_levels = set('NOTSET DEBUG INFO WARNING ERROR CRITICAL'.split())
+LOG_LEVEL_BOT = os.getenv('LOG_LEVEL_BOT', 'INFO').upper()
+LOG_LEVEL_BOT = getattr(
+    logging, LOG_LEVEL_BOT) if LOG_LEVEL_BOT in logging_levels else logging.INFO
 
 
 NEWS_ID = 'id'
 NEWS_TITLE = 'title'
 NEWS_BODY = 'text'
 NEWS_URL = 'url'
-
 
 DEFAULT_COMMANDS = (
     ('start', 'Start bot'),

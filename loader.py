@@ -9,8 +9,8 @@ from telebot.storage import StateRedisStorage
 from config_data import config
 from database.init_db import create_tables, init_db
 
-loguru.logger.add(sys.stdout, level=config.LOG_LEVEL)
-loguru.logger.add('logs/app.log', level=config.LOG_LEVEL, rotation='30 MB')
+loguru.logger.add(sys.stdout, level=config.LOG_LEVEL_APP)
+loguru.logger.add('logs/app.log', level=config.LOG_LEVEL_APP, rotation='30 MB')
 loguru.logger.add('logs/error.log', level='ERROR', rotation='30 MB')
 
 storage = StateRedisStorage(host=config.REDIS_HOST, port=config.REDIS_PORT,

@@ -20,9 +20,9 @@ def test_initialization(mock_create_tables, mock_init_db, mock_redis,
     importlib.reload(loader)
 
     assert mock_logger_add.call_count == 3
-    mock_logger_add.assert_any_call(sys.stdout, level=loader.config.LOG_LEVEL)
+    mock_logger_add.assert_any_call(sys.stdout, level=loader.config.LOG_LEVEL_APP)
     mock_logger_add.assert_any_call(
-        'logs/app.log', level=loader.config.LOG_LEVEL, rotation='30 MB')
+        'logs/app.log', level=loader.config.LOG_LEVEL_APP, rotation='30 MB')
     mock_logger_add.assert_any_call(
         'logs/error.log', level='ERROR', rotation='30 MB')
 

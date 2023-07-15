@@ -1,3 +1,4 @@
+import html
 import pytest
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -8,7 +9,7 @@ from keyboards.reply import news_menu
 def news_items():
     news_list = []
     for i in range(1, 3):
-        news_item = {'id': i, 'title': f'title{i}'}
+        news_item = {'id': i, 'title': f'&lt;title{i}&#8217;'}
         news_list.append(news_item)
     return news_list
 
@@ -19,7 +20,7 @@ def test_main(news_items):
     assert isinstance(result, InlineKeyboardMarkup)
     for i, item in enumerate(news_items, start=1):
         assert isinstance(result.keyboard[i - 1][0], InlineKeyboardButton)
-        assert result.keyboard[i - 1][0].text == item['title'].strip()
+        assert result.keyboard[i - 1][0].text == html.unescape(item['title'].strip())
         assert result.keyboard[i - 1][0].callback_data == f'news_{i}'
 
 

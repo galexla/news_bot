@@ -1,10 +1,10 @@
 # News bot
 
 ## Prerequisites
-Before running the bot, you need to have:
-* A `data` and a `logs` folder in the root of your project with write access to it. Redis and PostgreSQL data and logs are kept there.
-* You will also need to subscribe to a summarization API: https://text-analysis12.p.rapidapi.com/summarize-text/api/v1.1
-* And to a news API: https://worldnewsapi.com/
+Before running the bot, you need:
+* A `data` and a `logs` folder in the root of your project with write access to it. `data` is for Redis and PostgreSQL databases. `logs` is for application and bot logs.
+* Subscription to a summarization API: https://text-analysis12.p.rapidapi.com/summarize-text/api/v1.1
+* Subscription to a news API: https://worldnewsapi.com/
 
 ## Configuration
 Rename `.env.example` to `.env` and provide:
@@ -14,7 +14,7 @@ Rename `.env.example` to `.env` and provide:
 * `REDIS_PASSWORD` - password for Redis
 * `POSTGRES_PASSWORD` - password for PostgreSQL.
 
-You can also edit other values in `.env` file.
+You can also edit other values in the `.env` file.
 
 ## Running bot
 `docker compose up`

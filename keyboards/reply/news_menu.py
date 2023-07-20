@@ -20,7 +20,6 @@ def main(news: Iterable[dict]) -> InlineKeyboardMarkup:
     for item in news:
         id = item[config.NEWS_ID]
         title = item[config.NEWS_TITLE].strip()
-        title = html.unescape(title)
         data = f'news_{id}'
         menu_.add(InlineKeyboardButton(text=title, callback_data=data))
 

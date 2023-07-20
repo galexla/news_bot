@@ -1,15 +1,15 @@
 import re
 from random import randint
-from typing import Callable, Iterator
+from typing import Iterable
 
 from config_data import config
 
 SUMMARY_MIN_NEWS_N = 50
-SUMMARY_MAX_INPUT = 50000
+SUMMARY_MAX_INPUT = 30000
 UNIQUE_KEY = config.NEWS_BODY
 
 
-def get_summary_input(news: list[dict], key: str) -> str:
+def get_summary_input(news: Iterable[dict], key: str) -> str:
     """
     Gets text for summary
 
@@ -24,12 +24,12 @@ def get_summary_input(news: list[dict], key: str) -> str:
     average_length = _get_average_length(news, key)
     news_count = _get_news_count_for_summary(news, average_length)
     news_for_summary = _get_news_for_summary(news, news_count)
-    text_for_summary = _join_news(news_for_summary, key)
+    text_for_summary = _join_news(news_for_summary, key, 2.5 * average_length)
 
     return text_for_summary
 
 
-def _get_unique_news(news: list[dict]) -> list[dict]:
+def _get_unique_news(news: Iterable[dict]) -> list[dict]:
     """
     Returns a copy of news where no duplicates of value of key present
 
@@ -173,29 +173,8 @@ def _clean_news_text(text: str) -> str:
     return text
 
 
-def _iterate_news_key(news: list[dict], key: str,
-                      callback: Callable[[str], str]) -> Iterator[str]:
-    """
-    Iterates over news and applies callback to each item
-
-    :param news: news
-    :type news: list[dict]
-    :param key: field to get text from
-    :type key: str
-    :param callback: callback to apply to each item
-    :type callback: Callable[[str], str]
-    :yield: text
-    :ytype: str
-    """
-    for item in news:
-        if key not in item:
-            continue
-        text = callback(item[key])
-        if text != '':
-            yield text
-
-
-def _join_news(news: list[dict], key: str) -> str:
+def _join_news(news: list[dict], key: str,
+               max_item_length: int, sep: str = '\n\n') -> str:
     """
     Joins news text
 
@@ -206,5 +185,15 @@ def _join_news(news: list[dict], key: str) -> str:
     :return: joined news
     :rtype: str
     """
-    news_iter = _iterate_news_key(news, key, _clean_news_text)
-    return '\n'.join(news_iter)
+    result = ''
+    total_length = 0
+    for item in news:
+        item_text = _clean_news_text(item[key]) + sep
+        if len(item_text) > max_item_length:
+            continue
+        total_length += len(item_text)
+        if total_length > SUMMARY_MAX_INPUT:
+            continue
+        result += item_text
+
+    return result

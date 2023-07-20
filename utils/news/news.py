@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Tuple
+from typing import Iterable, Tuple
 
 from config_data import config
 from utils.misc import redis_cache as cache
@@ -7,8 +7,9 @@ from utils.news import news_api
 from utils.news.important_news import get_important_news
 from utils.news.summary_input import get_summary_input
 
-
 REDIS_PREFIXES = ('news_count', 'summary_input', 'important_news')
+IMPORTANT_NEWS_KEYS = (
+    config.NEWS_TITLE, config.NEWS_DESCRIPTION, config.NEWS_BODY)
 
 
 def get_news_semimanufactures(search_query: str, date_from: date,
@@ -36,17 +37,30 @@ def get_news_semimanufactures(search_query: str, date_from: date,
         cache.calc_ttl(date_to),
         get_news_count, news)
 
-    summary_input = cache.get_set(
-        cache.key_query('summary_input', search_query, date_from, date_to),
-        cache.calc_ttl(date_to),
-        get_summary_input, news, config.NEWS_TITLE)
-
     important_news = cache.get_set(
         cache.key_query('important_news', search_query, date_from, date_to),
         cache.calc_ttl(date_to),
-        get_important_news, news, config.NEWS_BODY)
+        get_important_news, search_query, news, IMPORTANT_NEWS_KEYS)
+
+    news_for_summary = important_news_to_iterator(important_news)
+    summary_input = cache.get_set(
+        cache.key_query('summary_input', search_query, date_from, date_to),
+        cache.calc_ttl(date_to),
+        get_summary_input, news_for_summary, config.NEWS_DESCRIPTION)
 
     return news_count, summary_input, important_news
+
+
+def important_news_to_iterator(important_news: dict[dict]) -> Iterable[dict]:
+    """
+    Converts important news to iterator.
+
+    :param important_news: important news
+    :type important_news: dict[dict]
+    :return: important news iterator
+    :rtype: Iterable[dict]
+    """
+    return (item[1]['news'] for item in important_news.items())
 
 
 def get_news_count(news: list[dict]) -> int:

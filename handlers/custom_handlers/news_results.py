@@ -125,7 +125,6 @@ def _display_summary_and_top_news(chat_id: str, summary: list[str],
     """
     text_msg = '*Here is summary of news for the chosen period:*\n'
     text_msg = text_msg + ' '.join(summary)
-    text_msg = html.unescape(text_msg)
     bot.send_message(chat_id, text_msg, parse_mode='Markdown')
 
     text_msg = '*Here are top news. You can choose one to get ' \

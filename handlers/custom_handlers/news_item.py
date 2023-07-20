@@ -29,7 +29,6 @@ def bot_click_news_item(call: CallbackQuery):
     news_item, _ = top_news.get_cached_top_news(news_id)
     if news_item:
         title, url = news_item[config.NEWS_TITLE], news_item[config.NEWS_URL]
-        title = html.unescape(title)
         bot.send_message(chat_id, f'*{title}*',
                          reply_markup=news_menu.news_item(news_id, url),
                          parse_mode='Markdown')
@@ -58,12 +57,10 @@ def bot_news_summary(call: CallbackQuery):
     news_item, ttl = top_news.get_cached_top_news(news_id)
     if news_item:
         title = news_item[config.NEWS_TITLE]
-        title = html.unescape(title)
 
         summary = cache.get_set(cache.key('article_summary', news_id), ttl,
                                 get_summary, news_item[config.NEWS_BODY])
         summary = ' '.join(summary)
-        summary = html.unescape(summary)
 
         text_msg = f'*Summary of article "{title}"*:\n{summary}'
         bot.send_message(chat_id, text_msg, parse_mode='Markdown')

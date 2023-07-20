@@ -1,6 +1,8 @@
+import os
 import sys
 
 import loguru
+import numpy as np
 import redis
 from telebot import TeleBot
 from telebot import logger as telebot_logger
@@ -10,8 +12,10 @@ from config_data import config
 from database.init_db import create_tables, init_db
 
 loguru.logger.add(sys.stdout, level=config.LOG_LEVEL_APP)
-loguru.logger.add('logs/app.log', level=config.LOG_LEVEL_APP, rotation='30 MB')
-loguru.logger.add('logs/error.log', level='ERROR', rotation='30 MB')
+loguru.logger.add(os.path.join('logs', 'app.log'),
+                  level=config.LOG_LEVEL_APP, rotation='30 MB')
+loguru.logger.add(os.path.join('logs', 'error.log'),
+                  level='ERROR', rotation='30 MB')
 
 storage = StateRedisStorage(host=config.REDIS_HOST, port=config.REDIS_PORT,
                             db=config.REDIS_DB, password=config.REDIS_PASSWORD)
@@ -29,3 +33,8 @@ init_db(config.POSTGRES_DB, host=config.POSTGRES_HOST,
         port=config.POSTGRES_PORT)
 
 create_tables()
+
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+words_file_path = os.path.join(cur_dir, 'data', 'glove-twitter-25_163k.npy')
+freq_word_vectors = np.load(words_file_path, allow_pickle=True).item()
+pass

@@ -37,7 +37,8 @@ LOG_LEVEL_BOT = getattr(
 
 NEWS_ID = 'id'
 NEWS_TITLE = 'title'
-NEWS_BODY = 'text'
+NEWS_DESCRIPTION = 'description'
+NEWS_BODY = 'content'
 NEWS_URL = 'url'
 
 DEFAULT_COMMANDS = (

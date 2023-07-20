@@ -1,4 +1,7 @@
+import html
 import math
+import re
+import uuid
 from datetime import date, datetime
 from random import randint
 from typing import Iterable
@@ -12,10 +15,13 @@ from utils.news.utils import date_from_to_str, date_to_to_str
 
 MIN_REQUEST_INTERVAL = 1
 MAX_TOTAL_QUERIES_TIME = 6
+# MAX_QUERIES_COUNT = 7  # change to 2 for manual testing
+MAX_QUERIES_COUNT = 1  # 100 most relevant news from newsapi.org is enough
 PAGE_SIZE = 100
-MAX_QUERIES_COUNT = 7  # change to 2 for manual testing
 MIN_PAGE_SIZE = 10
 MAX_PAGE_SIZE = 100
+JSON_NEWS_PATH = ['articles']
+JSON_TOTAL_COUNT_PATH = ['totalResults']
 
 
 def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
@@ -167,8 +173,6 @@ def _add_news(news: list[dict], search_query: str, date_from: date, date_to: dat
     :return: total news count for the query
     :rtype: int
     """
-    JSON_NEWS_PATH = ['news']
-    JSON_TOTAL_COUNT_PATH = ['available']
     total_count = 0
     for i_page in page_numbers:
         page = _get_news_page(
@@ -178,6 +182,37 @@ def _add_news(news: list[dict], search_query: str, date_from: date, date_to: dat
         news.extend(news_portion if news_portion is not None else [])
 
     return total_count
+
+
+def _add_id_field(news: list[dict]) -> None:
+    """
+    Adds id field to news items
+
+    :param news: news
+    :type news: list[dict]
+    :return: None
+    """
+    for news_item in news:
+        news_item[config.NEWS_ID] = uuid.uuid4().hex
+
+
+def _clean_news(news: list[dict]) -> None:
+    """
+    Strips html tags from text
+
+    :param text: text
+    :type text: str
+    :return: text without html tags
+    :rtype: str
+    """
+    keys = ['title', 'description', 'content']
+    for news_item in news:
+        for key in keys:
+            news_item[key] = re.sub(r'<[^<]+?>', ' ', news_item[key])
+            news_item[key] = html.unescape(news_item[key])
+            news_item[key] = re.sub(r'[ ]+', ' ', news_item[key])
+        news_item['content'] = re.sub(
+            r'\s*\[\+\d+ chars\]\s*$', '', news_item['content'])
 
 
 def _get_news_page(search_query: str, page_number: int, page_size: int,
@@ -212,30 +247,35 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
         raise ValueError(
             f'Page size must be between {MIN_PAGE_SIZE} and {MAX_PAGE_SIZE}')
 
-    datetime_from = date_from_to_str(date_from, False)
-    datetime_to = date_to_to_str(date_to, False)
-    offset = (page_number - 1) * page_size
+    datetime_from = date_from_to_str(date_from)
+    datetime_to = date_to_to_str(date_to)
 
-    url = 'https://api.worldnewsapi.com/search-news'
+    url = 'https://newsapi.org/v2/everything'
 
-    request = {
-        'api-key': config.NEWS_API_KEY,
-        'text': search_query,
+    params = {
+        'apiKey': config.NEWS_API_KEY,
+        'q': search_query,
         'language': 'en',
-        'earliest-publish-date': datetime_from,
-        'latest-publish-date': datetime_to,
-        'sort': 'publish-time',
-        'sort-direction': 'DESC',
-        'offset': offset,
-        'number': page_size
+        'from': datetime_from,
+        'to': datetime_to,
+        'sort': 'relevancy',
+        'page': page_number,
+        'pageSize': page_size
     }
 
-    query = ApiQuery('GET', url, headers=None, body=request,
+    query = ApiQuery('GET', url, headers=None, body=params,
                      interval=MIN_REQUEST_INTERVAL, timeout=60)
     response = ApiQueryScheduler.execute(query)
 
-    if response is None:
+    if not response or \
+            (isinstance(response, dict) and response.get('status') != 'ok'):
         raise ValueError(
-            f'Request {search_query} from {datetime_from} to {datetime_to} failed')
+            'Request {q} from {from_} to {to} failed, status: {stat}'.format(
+                q=search_query, from_=datetime_from, to=datetime_to,
+                stat=response.get('status')))
+
+    if response:
+        _add_id_field(response['articles'])
+        _clean_news(response['articles'])
 
     return response

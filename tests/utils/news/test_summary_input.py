@@ -11,8 +11,8 @@ with patch('database.init_db.init_db'), \
                                           _get_average_length,
                                           _get_news_count_for_summary,
                                           _get_news_for_summary,
-                                          _get_unique_news, _iterate_news_key,
-                                          _join_news, get_summary_input)
+                                          _get_unique_news, _join_news,
+                                          get_summary_input)
 
 
 def test__clean_news_text():
@@ -33,29 +33,18 @@ def test__join_news():
     Tests _join_news function
     """
     news = [
-        {'text': 'text1'},
-        {'text': 'text2'},
+        {'text': 'te1'},
+        {'text': 'tex2'},
         {'text': 'text3'},
+        {'text': 'tex4'},
     ]
-    assert _join_news(news, 'text') == 'text1.\ntext2.\ntext3.'
-    assert _join_news([], 'text') == ''
-    assert _join_news(news, '') == ''
-
-
-def test__iterate_news_key():
-    """
-    Tests _iterate_news_key function
-    """
-    news = [
-        {'text': 'text1'},
-        {'text': 'text2'},
-        {'text': 'text3'},
-    ]
-    assert list(_iterate_news_key(news, 'text', _clean_news_text)) == [
-        'text1.', 'text2.', 'text3.'
-    ]
-    assert list(_iterate_news_key([], 'text', _clean_news_text)) == []
-    assert list(_iterate_news_key(news, '', _clean_news_text)) == []
+    assert _join_news(
+        news, 'text', 8) == 'te1.\n\ntex2.\n\ntext3.\n\ntex4.\n\n'
+    assert _join_news(news, 'text', 7) == 'te1.\n\ntex2.\n\ntex4.\n\n'
+    assert _join_news(news, 'text', 6) == 'te1.\n\n'
+    assert _join_news(news, 'text', 4) == ''
+    assert _join_news([], 'text', 8) == ''
+    pytest.raises(KeyError, _join_news, news, '', 8)
 
 
 def test__get_news_for_summary():
@@ -114,13 +103,12 @@ def test__get_average_length():
         _get_average_length([], 'text')
     with pytest.raises(ValueError):
         _get_average_length(news, '')
-    # with pytest.raises(KeyError):
-    #     _get_average_length(news, 'text')
     with pytest.raises(ValueError):
         _get_average_length(
             [{'text': ''}, {'text': ''}, {'text': ''}], 'text')
 
 
+@patch('utils.news.summary_input.UNIQUE_KEY', 'text')
 def test__get_unique_news():
     news = [{'text': 'text1', 'description': '123'},
             {'text': 'text1:2', 'description': 'dfdsf'},
@@ -135,17 +123,18 @@ def test__get_unique_news():
 
 
 def test_get_summary_input():
-    file_name = os.path.join(os.path.dirname(__file__), 'data', '1.json')
+    file_name = os.path.join(os.path.dirname(
+        __file__), 'data', 'ecology_20230403.json')
     news = load_news_from_file(file_name)
 
     news_truncated = news[:10]
     actual = get_summary_input(news_truncated, 'description')
     with open('tests/utils/news/data/10_news_summary_input.txt', 'r', encoding='utf-8') as f:
-        excepted = f.read()
+        excepted = f.read().replace('\n', '\n\n')
     assert actual == excepted
 
     news_truncated = news[:60]
     actual = get_summary_input(news_truncated, 'description')
     with open('tests/utils/news/data/60_news_summary_input.txt', 'r', encoding='utf-8') as f:
-        excepted = f.read()
+        excepted = f.read().replace('\n', '\n\n')
     assert actual == excepted

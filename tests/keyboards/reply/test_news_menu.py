@@ -1,4 +1,3 @@
-import html
 import pytest
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 

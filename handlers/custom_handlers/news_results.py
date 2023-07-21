@@ -1,4 +1,3 @@
-import html
 from datetime import date
 
 import requests

@@ -1,4 +1,3 @@
-import html
 from typing import Iterable
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup

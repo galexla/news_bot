@@ -16,7 +16,7 @@ def load_news_from_dir(dirname: str) -> list[dict]:
     """
     news = []
     for filename in os.listdir(dirname):
-        if re.match(r'^\d+.json$', filename):
+        if re.match(r'^.+.json$', filename):
             filename = os.path.join(dirname, filename)
             news_item = load_news_from_file(filename)
             news.extend(news_item)

@@ -33,8 +33,3 @@ init_db(config.POSTGRES_DB, host=config.POSTGRES_HOST,
         port=config.POSTGRES_PORT)
 
 create_tables()
-
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-words_file_path = os.path.join(cur_dir, 'data', 'glove-twitter-25_163k.npy')
-freq_word_vectors = np.load(words_file_path, allow_pickle=True).item()
-pass

@@ -39,6 +39,15 @@ def get_results(chat_id: int, user_id: int, search_query: str,
     try:
         news_count, summary_input, important_news = get_news_semimanufactures(
             search_query, date_from, date_to)
+        
+        if news_count == 0:
+            bot.delete_state(user_id, chat_id)
+            logger.info(
+                f'No news found for query: "{search_query}", '
+                f'period: {date_from_str} - {date_to_str}.')
+            bot.send_message(chat_id, '*No news found.*',
+                             parse_mode='Markdown')
+            return
 
         text_msg = f'*Got {news_count} news. ' \
             f'Generating summary and top news...*'

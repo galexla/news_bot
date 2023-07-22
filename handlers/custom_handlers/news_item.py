@@ -1,4 +1,3 @@
-import html
 import re
 
 from loguru import logger
@@ -23,10 +22,10 @@ def bot_click_news_item(call: CallbackQuery):
     """
     logger.debug('bot_click_news_item()')
 
-    news_id = re.search(r'^news_(\d+)$', call.data).group(1).strip()
+    news_id = re.search(r'^news_(.+)$', call.data).group(1).strip()
     chat_id, user_id = call.message.chat.id, call.from_user.id
 
-    news_item, _ = top_news.get_cached_top_news(news_id)
+    news_item, _ = top_news.get_cached_top_news_item(news_id)
     if news_item:
         title, url = news_item[config.NEWS_TITLE], news_item[config.NEWS_URL]
         bot.send_message(chat_id, f'*{title}*',
@@ -51,10 +50,10 @@ def bot_news_summary(call: CallbackQuery):
     """
     logger.debug('bot_news_summary()')
 
-    news_id = re.search(r'^summary_(\d+)$', call.data).group(1).strip()
+    news_id = re.search(r'^summary_(.+)$', call.data).group(1).strip()
     chat_id = call.message.chat.id
 
-    news_item, ttl = top_news.get_cached_top_news(news_id)
+    news_item, ttl = top_news.get_cached_top_news_item(news_id)
     if news_item:
         title = news_item[config.NEWS_TITLE]
 

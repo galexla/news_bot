@@ -210,7 +210,7 @@ def _clean_news(news: list[dict]) -> None:
         for key in keys:
             news_item[key] = re.sub(r'<[^<]+?>', ' ', news_item[key])
             news_item[key] = html.unescape(news_item[key])
-            news_item[key] = re.sub(r'[ ]+', ' ', news_item[key])
+            news_item[key] = re.sub(r'[ \t]+', ' ', news_item[key])
         news_item['content'] = re.sub(
             r'\s*\[\+\d+ chars\]\s*$', '', news_item['content'])
 
@@ -269,10 +269,14 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
 
     if not response or \
             (isinstance(response, dict) and response.get('status') != 'ok'):
+        if not response or not isinstance(response, dict):
+            message = 'Unknown error'
+        else:
+            message = response.get('status') + ', ' + response.get('message')
         raise ValueError(
-            'Request {q} from {from_} to {to} failed, status: {stat}'.format(
+            'Request {q} from {from_} to {to} failed: {message}'.format(
                 q=search_query, from_=datetime_from, to=datetime_to,
-                stat=response.get('status')))
+                message=message))
 
     if response:
         _add_id_field(response['articles'])

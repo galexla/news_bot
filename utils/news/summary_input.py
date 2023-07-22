@@ -1,15 +1,14 @@
 import re
-from random import randint
 from typing import Iterable
 
 from config_data import config
 
-SUMMARY_MIN_NEWS_N = 50
+MAX_NEWS_COUNT = 30
 SUMMARY_MAX_INPUT = 30000
 UNIQUE_KEY = config.NEWS_BODY
 
 
-def get_summary_input(news: Iterable[dict], key: str) -> str:
+def get_summary_input(news: Iterable[dict], text_key: str) -> str:
     """
     Gets text for summary
 
@@ -21,10 +20,11 @@ def get_summary_input(news: Iterable[dict], key: str) -> str:
     :rtype: str
     """
     news = _get_unique_news(news)
-    average_length = _get_average_length(news, key)
-    news_count = _get_news_count_for_summary(news, average_length)
-    news_for_summary = _get_news_for_summary(news, news_count)
-    text_for_summary = _join_news(news_for_summary, key, 2.5 * average_length)
+    average_length = _get_average_length(news, text_key)
+    news_count = round(SUMMARY_MAX_INPUT / average_length)
+    news_count = min(news_count, len(news), MAX_NEWS_COUNT)
+    text_for_summary = _join_news(
+        news[:news_count], text_key, 2.5 * average_length)
 
     return text_for_summary
 
@@ -97,66 +97,6 @@ def _get_average_length(news: list, key: str) -> int:
     return average_length
 
 
-def _get_news_count_for_summary(news: list[dict], average_length: int) -> int:
-    """
-    Calculates the number of news to be used for summary generation
-
-    :news: list of news
-    :type news: list[dict]
-    :param average_length: average length of a news item
-    :type average_length: int
-    :raises ValueError: raised if news list is empty
-    :raises ValueError: raised if average length is less or equal to zero
-    :return: number of news to be used for summary generation
-    :rtype: int
-    """
-    if len(news) == 0:
-        raise ValueError('News list is empty')
-
-    if average_length <= 0:
-        raise ValueError('Average length must be greater than zero')
-
-    if len(news) <= SUMMARY_MIN_NEWS_N:
-        return len(news)
-
-    news_count = round(SUMMARY_MAX_INPUT / average_length)
-    news_count = max(SUMMARY_MIN_NEWS_N, news_count)
-    news_count = min(len(news), news_count)
-
-    return news_count
-
-
-def _get_news_for_summary(news: list[dict], n_chunks: int) -> list[dict]:
-    """
-    Splits a list of news into chunks and returns a random news item from each chunk
-
-    :param news: list of news
-    :type news: list[dict]
-    :param n_chunks: number of chunks
-    :type n_chunks: int
-    :raises ValueError: raised if news list is empty
-    :raises ValueError: raised if number of chunks is less or equal to zero
-    :return: list of random news items
-    :rtype: list[dict]
-    """
-    if len(news) == 0:
-        raise ValueError('News list is empty')
-
-    if n_chunks <= 0:
-        raise ValueError('Number of chunks must be greater than zero')
-
-    if n_chunks >= len(news):
-        return news
-
-    result = []
-    chunk_size = len(news) / n_chunks
-    for i in range(n_chunks):
-        start = round(i * chunk_size)
-        end = round((i + 1) * chunk_size) - 1
-        result.append(news[randint(start, end)])
-    return result
-
-
 def _clean_news_text(text: str) -> str:
     """
     Cleans news text and adds a dot at the end if it's missing
@@ -166,9 +106,11 @@ def _clean_news_text(text: str) -> str:
     :return: cleaned text
     :rtype: str
     """
-    text = text.strip(' \n\r\t[]():;,{}|')
-    text = re.sub(r'([^\.\?\!])$', r'\1.', text, flags=re.MULTILINE)
-    text = re.sub(r'([\t ]+)', ' ', text, flags=re.MULTILINE)
+    text = text.lstrip(' \n\r\t')
+    text = text.rstrip(' \n\r\t:;,-‐‑‒﹣－')
+    if not text.endswith(('!', '?', '…', '.')):
+        text += '.'
+    text = re.sub(r'[\t ]{2,}', ' ', text, flags=re.MULTILINE)
 
     return text
 

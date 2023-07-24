@@ -39,7 +39,7 @@ def get_results(chat_id: int, user_id: int, search_query: str,
     try:
         news_count, summary_input, important_news = get_news_semimanufactures(
             search_query, date_from, date_to)
-        
+
         if news_count == 0:
             bot.delete_state(user_id, chat_id)
             logger.info(
@@ -49,7 +49,7 @@ def get_results(chat_id: int, user_id: int, search_query: str,
                              parse_mode='Markdown')
             return
 
-        text_msg = f'*Got {news_count} news. ' \
+        text_msg = f'*Total news found: {news_count}. ' \
             f'Generating summary and top news...*'
         bot.send_message(chat_id, text_msg, parse_mode='Markdown')
 

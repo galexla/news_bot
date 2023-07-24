@@ -24,7 +24,7 @@ JSON_NEWS_PATH = ['articles']
 JSON_TOTAL_COUNT_PATH = ['totalResults']
 
 
-def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
+def get_news(search_query: str, date_from: date, date_to: date) -> tuple[list[dict], int]:
     """
     Gets news using WebSearch API
 
@@ -58,7 +58,7 @@ def get_news(search_query: str, date_from: date, date_to: date) -> list[dict]:
                   page_numbers, PAGE_SIZE)
         logger.success(f'got rest of pages, news count={len(news)}')
 
-    return news
+    return news, n_news_total
 
 
 def add_first_page_of_news(news: list[dict], search_query: str,

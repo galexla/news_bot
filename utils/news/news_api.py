@@ -272,7 +272,7 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
         if not response or not isinstance(response, dict):
             message = 'Unknown error'
         else:
-            message = response.get('status') + ', ' + response.get('message')
+            message = response.get('message')
         raise ValueError(
             'Request {q} from {from_} to {to} failed: {message}'.format(
                 q=search_query, from_=datetime_from, to=datetime_to,

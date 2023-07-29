@@ -1,6 +1,6 @@
 import os
 from datetime import date, datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from tests.test_utils import load_news_from_dir
 
@@ -13,8 +13,8 @@ with patch('database.init_db.init_db'), \
 def mock_news_page(news, page_num, page_size):
     news_part = news[(page_num - 1) * page_size: page_num * page_size]
     page = {
-        'available': len(news),
-        'news': news_part
+        'totalResults': len(news),
+        'articles': news_part
     }
     return page
 
@@ -33,8 +33,9 @@ def test_get_news(mock_get_news_page):
     news, page_size = get_news_test_data(3)
     mock_get_news_page.side_effect = lambda q, page_number, s, f, t: \
         mock_news_page(news, page_number, page_size)
-    actual = news_api.get_news('Ecology', date(2020, 1, 1), date(2020, 1, 3))
-    assert actual == news
+    actual, news_total = news_api.get_news('Ecology', date(2020, 1, 1), date(2020, 1, 3))
+    assert news_total == len(news)
+    assert actual == news[:page_size]
 
 
 @patch('utils.news.news_api._get_news_page')
@@ -89,7 +90,7 @@ def test_add_news(mock_get_json_value, mock_get_news_page):
     date_to = date(2023, 12, 31)
     page_numbers = [1, 2, 3]
     news_per_page = 10
-    mock_page = {'news': [{'id': 1}, {'id': 2}], 'available': '2'}
+    mock_page = {'articles': [{'id': 1}, {'id': 2}], 'totalResults': '2'}
     mock_get_news_page.return_value = mock_page
     mock_get_json_value.side_effect = lambda json_obj, keys: json_obj[keys[0]]
 
@@ -101,13 +102,16 @@ def test_add_news(mock_get_json_value, mock_get_news_page):
     mock_get_news_page.n_calls == 3
     mock_get_news_page.assert_called_with(
         search_query, page_numbers[-1], news_per_page, date_from, date_to)
-    mock_get_json_value.assert_called_with(mock_page, ['available'])
+    mock_get_json_value.assert_called_with(mock_page, ['totalResults'])
 
 
-@patch('utils.news.news_api.config', autospec=True)
-def test__get_news_page(config_mock, requests_mock):
-    config_mock.NEWS_API_KEY = '1234567890'
-    url = 'https://api.worldnewsapi.com/search-news'
+@patch('utils.news.news_api.config.NEWS_API_KEY', new='1234567890')
+@patch('utils.news.news_api.config.NEWS_ID', new='id')
+@patch('uuid.uuid4')
+def test__get_news_page(uuid4_mock, requests_mock):
+    uuid4_mock.return_value.hex = '1234567890'
+
+    url = 'https://newsapi.org/v2/everything'
     method = 'GET'
     search_query = 'test'
     page_number = 1
@@ -116,27 +120,28 @@ def test__get_news_page(config_mock, requests_mock):
     date_to = date(2020, 1, 2)
 
     request = {
-        'api-key': config_mock.NEWS_API_KEY,
-        'text': search_query,
+        'apiKey': '1234567890',
+        'q': search_query,
         'language': 'en',
-        'earliest-publish-date': date_from_to_str(date_from, True),
-        'latest-publish-date': date_to_to_str(date_to, True),
-        'sort': 'publish-time',
-        'sort-direction': 'DESC',
-        'offset': (page_number - 1) * page_size,
-        'number': page_size
+        'from': date_from_to_str(date_from, True),
+        'to': date_to_to_str(date_to, True),
+        'sort': 'relevancy',
+        'page': page_number,
+        'pageSize': page_size
     }
 
-    expected_response = [
-        {
+    expected_response = {
+        'status': 'ok',
+        'totalResults': 1,
+        'articles': [{
             'id': '1234567890',
             'title': 'test',
             'description': 'test',
             'url': 'https://test.com',
             'datePublished': '2020-01-01T00:00:00.000Z',
-            'body': 'test'
-        }
-    ]
+            'content': 'test'
+        }]
+    }
 
     requests_mock.register_uri(
         method, url, json=expected_response, status_code=200)

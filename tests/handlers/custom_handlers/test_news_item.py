@@ -37,18 +37,18 @@ def callback_query2():
 
 @pytest.fixture
 def news_item():
-    return {'id': '123', 'title': 'test title', 'url': 'test_url', 'text': 'test body'}
+    return {'id': '123', 'title': 'test title', 'url': 'test_url', 'content': 'test body'}
 
 
 @patch('handlers.custom_handlers.news_item.bot')
 @patch('handlers.custom_handlers.news_item.top_news')
 def test_bot_click_news_item(mock_top_news, mock_bot, news_item, callback_query):
-    mock_top_news.get_cached_top_news.return_value = (news_item, 3600)
+    mock_top_news.get_cached_top_news_item.return_value = (news_item, 3600)
 
     bot_click_news_item(callback_query)
 
-    mock_top_news.get_cached_top_news.assert_called_once()
-    assert mock_top_news.get_cached_top_news.call_args[0][0] == news_item['id']
+    mock_top_news.get_cached_top_news_item.assert_called_once()
+    assert mock_top_news.get_cached_top_news_item.call_args[0][0] == news_item['id']
 
     mock_bot.send_message.assert_called_once()
     assert mock_bot.send_message.call_args[0][0] == callback_query.message.chat.id
@@ -60,12 +60,12 @@ def test_bot_click_news_item(mock_top_news, mock_bot, news_item, callback_query)
 @patch('handlers.custom_handlers.news_item.bot')
 @patch('handlers.custom_handlers.news_item.top_news')
 def test_bot_click_news_item_error(mock_top_news, mock_bot, news_item, callback_query):
-    mock_top_news.get_cached_top_news.return_value = (None, 0)
+    mock_top_news.get_cached_top_news_item.return_value = (None, 0)
 
     bot_click_news_item(callback_query)
 
-    mock_top_news.get_cached_top_news.assert_called_once()
-    assert mock_top_news.get_cached_top_news.call_args[0][0] == news_item['id']
+    mock_top_news.get_cached_top_news_item.assert_called_once()
+    assert mock_top_news.get_cached_top_news_item.call_args[0][0] == news_item['id']
 
     mock_bot.send_message.assert_called_once()
     assert mock_bot.send_message.call_args[0][0] == callback_query.message.chat.id
@@ -79,7 +79,7 @@ def test_bot_click_news_item_error(mock_top_news, mock_bot, news_item, callback_
 @patch('handlers.custom_handlers.news_item.get_summary')
 def test_bot_news_summary(mock_get_summary, mock_cache, mock_top_news,
                           mock_bot, news_item, callback_query2):
-    mock_top_news.get_cached_top_news.return_value = (news_item, 3600)
+    mock_top_news.get_cached_top_news_item.return_value = (news_item, 3600)
     mock_cache.get_set.return_value = ['summary of article']
     mock_get_summary.return_value = 'summary of article'
 
@@ -97,7 +97,7 @@ def test_bot_news_summary(mock_get_summary, mock_cache, mock_top_news,
 @patch('handlers.custom_handlers.news_item.get_summary')
 def test_bot_news_summary_error(mock_get_summary, mock_cache, mock_top_news,
                                 mock_bot, news_item, callback_query2):
-    mock_top_news.get_cached_top_news.return_value = (None, 0)
+    mock_top_news.get_cached_top_news_item.return_value = (None, 0)
     mock_cache.get_set.return_value = []
     mock_get_summary.return_value = 'summary of article'
 

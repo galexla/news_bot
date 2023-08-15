@@ -2,7 +2,6 @@ import os
 import sys
 
 import loguru
-import numpy as np
 import redis
 from telebot import TeleBot
 from telebot import logger as telebot_logger

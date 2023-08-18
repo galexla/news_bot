@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from loguru import logger
 from telebot.types import CallbackQuery, Message
 
@@ -50,6 +52,8 @@ def bot_history_item(call: CallbackQuery) -> None:
 
     item = SearchHistory.get_by_id(id)
     if item:
+        item.entered_date = datetime.now()
+        item.save()
         get_results(chat_id, user_id, item.query, item.date_from, item.date_to)
     else:
         bot.send_message(chat_id, 'Item not found')

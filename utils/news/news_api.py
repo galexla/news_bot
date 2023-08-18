@@ -208,9 +208,12 @@ def _clean_news(news: list[dict]) -> None:
     keys = ['title', 'description', 'content']
     for news_item in news:
         for key in keys:
-            news_item[key] = re.sub(r'<[^<]+?>', ' ', news_item[key])
-            news_item[key] = html.unescape(news_item[key])
-            news_item[key] = re.sub(r'[ \t]+', ' ', news_item[key])
+            if news_item[key] is None:
+                news_item[key] = ''
+            else:
+                news_item[key] = re.sub(r'<[^<]+?>', ' ', news_item[key])
+                news_item[key] = html.unescape(news_item[key])
+                news_item[key] = re.sub(r'[ \t]+', ' ', news_item[key])
         news_item['content'] = re.sub(
             r'\s*\[\+\d+ chars\]\s*$', '', news_item['content'])
 

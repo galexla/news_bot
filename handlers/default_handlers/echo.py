@@ -16,5 +16,5 @@ def bot_echo(message: Message) -> None:
     logger.debug('bot_echo()')
 
     bot.reply_to(
-        message, 'Echo without state or filter.\n' f'Message: {message.text}'
+        message, f'Your message: {message.text}'
     )

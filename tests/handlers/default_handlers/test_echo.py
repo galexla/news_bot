@@ -23,4 +23,4 @@ def test_bot_click_news_item_error(mock_bot, message):
     mock_bot.reply_to.assert_called_once()
     assert mock_bot.reply_to.call_args[0][0] == message
     assert mock_bot.reply_to.call_args[0][1].startswith(
-        'Echo without state or filter.\n')
+        'Your message: ')

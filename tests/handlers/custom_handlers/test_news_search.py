@@ -63,21 +63,21 @@ def test__handle_invalid_input(bot_mock, mock_manager, message, invalid_inputs):
     error_message = 'Search query cannot be empty.'
     news_search._handle_invalid_input(message, error_message)
     bot_mock.retrieve_data.assert_called_once_with(
-        message.from_user.id, message.chat.id)
+        message.from_user.id)
     bot_mock.delete_state.assert_called_once_with(
-        message.from_user.id, message.chat.id)
+        message.from_user.id)
     bot_mock.reply_to.assert_called_once()
 
 
-@pytest.mark.parametrize('invalid_inputs', [0, 1, 2])
+@pytest.mark.parametrize('invalid_inputs', [0, 1])
 @patch('handlers.custom_handlers.news_search.bot')
-def test__handle_invalid_input(bot_mock, mock_manager, message, invalid_inputs):
+def test__handle_invalid_input_valid(bot_mock, mock_manager, message, invalid_inputs):
     bot_mock.retrieve_data.return_value = mock_manager(invalid_inputs)
 
     error_message = 'Search query cannot be empty.'
     news_search._handle_invalid_input(message, error_message)
     bot_mock.retrieve_data.assert_called_once_with(
-        message.from_user.id, message.chat.id)
+        message.from_user.id)
     bot_mock.delete_state.assert_not_called()
     bot_mock.reply_to.assert_called_once()
 

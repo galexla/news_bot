@@ -1,3 +1,4 @@
+import re
 from loguru import logger
 from telebot.types import CallbackQuery, Message
 from telegram_bot_calendar import LSTEP, DetailedTelegramCalendar
@@ -23,9 +24,9 @@ def bot_news_start(message: Message) -> None:
     logger.debug('bot_news_start()')
 
     chat_id, user_id = message.chat.id, message.from_user.id
+    bot.set_state(user_id, NewsState.enter_search_query, chat_id)
     bot.reset_data(user_id, chat_id)
 
-    bot.set_state(user_id, NewsState.enter_search_query, chat_id)
     bot.send_message(chat_id, '*Enter search query:*', parse_mode='Markdown')
 
 
@@ -43,7 +44,7 @@ def bot_enter_search_query(message: Message) -> None:
     search_query = message.text.strip()
     chat_id, user_id = message.chat.id, message.from_user.id
 
-    if search_query:
+    if is_query_valid(search_query):
         with bot.retrieve_data(user_id, chat_id) as data:
             data['n_invalid_inputs'] = 0
             data['search_query'] = search_query
@@ -51,7 +52,24 @@ def bot_enter_search_query(message: Message) -> None:
         bot.set_state(user_id, NewsState.enter_dates, chat_id)
         _display_calendar(user_id)
     else:
-        _handle_invalid_input(message, 'Search query cannot be empty.')
+        _handle_invalid_input(
+            message, '*Search query must contain letters or numbers an be at'
+            'least 3 characters long.\nEnter search query:*')
+
+
+def is_query_valid(search_query: str) -> bool:
+    """
+    Checks if search query is valid
+
+    :param search_query: search query
+    :type search_query: str
+    :return: True if search query is valid, False otherwise
+    """
+    search_query = search_query.strip(' \t\n\r')
+    if not re.search(r'\w', search_query):
+        return False
+
+    return len(search_query) >= 3
 
 
 def _handle_invalid_input(message: Message, error_message: str) -> None:
@@ -65,15 +83,14 @@ def _handle_invalid_input(message: Message, error_message: str) -> None:
     :return: None
     """
     chat_id, user_id = message.chat.id, message.from_user.id
-    with bot.retrieve_data(user_id, chat_id) as data:
-        n_invalid_inputs = data.get('n_invalid_inputs', 0)
-        data['n_invalid_inputs'] = n_invalid_inputs + 1
-        if n_invalid_inputs >= MAX_INVALID_INPUTS:
-            bot.delete_state(user_id, chat_id)
-            text = 'You entered invalid data 3 times. You can start over by entering /news'
-            bot.reply_to(message, text)
+    with bot.retrieve_data(user_id) as data:
+        data['n_invalid_inputs'] = data.get('n_invalid_inputs', 0) + 1
+        if data['n_invalid_inputs'] >= MAX_INVALID_INPUTS:
+            bot.delete_state(user_id)
+            text = '*You entered invalid query 3 times. You can start over by entering /news*'
+            bot.reply_to(message, text, parse_mode='Markdown')
         else:
-            bot.reply_to(message, error_message)
+            bot.reply_to(message, error_message, parse_mode='Markdown')
 
 
 def _display_calendar(user_id: int) -> None:

@@ -1,4 +1,5 @@
 import re
+
 from loguru import logger
 from telebot.types import CallbackQuery, Message
 from telegram_bot_calendar import LSTEP, DetailedTelegramCalendar
@@ -19,7 +20,6 @@ def bot_news_start(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :return: None
     """
     logger.debug('bot_news_start()')
 
@@ -37,7 +37,6 @@ def bot_enter_search_query(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :return: None
     """
     logger.debug('bot_enter_search_query()')
 
@@ -53,8 +52,10 @@ def bot_enter_search_query(message: Message) -> None:
         _display_calendar(user_id)
     else:
         _handle_invalid_input(
-            message, '*Search query must contain letters or numbers an be at'
-            'least 3 characters long.\nEnter search query:*')
+            message,
+            '*Search query must contain letters or numbers an be at'
+            'least 3 characters long.\nEnter search query:*',
+        )
 
 
 def is_query_valid(search_query: str) -> bool:
@@ -80,14 +81,16 @@ def _handle_invalid_input(message: Message, error_message: str) -> None:
     :type message: Message
     :param error_message: error message
     :type error_message: str
-    :return: None
     """
-    chat_id, user_id = message.chat.id, message.from_user.id
+    _, user_id = message.chat.id, message.from_user.id
     with bot.retrieve_data(user_id) as data:
         data['n_invalid_inputs'] = data.get('n_invalid_inputs', 0) + 1
         if data['n_invalid_inputs'] >= MAX_INVALID_INPUTS:
             bot.delete_state(user_id)
-            text = '*You entered invalid query 3 times. You can start over by entering /news*'
+            text = (
+                '*You entered invalid query 3 times. You can start over '
+                'by entering /news*'
+            )
             bot.reply_to(message, text, parse_mode='Markdown')
         else:
             bot.reply_to(message, error_message, parse_mode='Markdown')
@@ -99,22 +102,23 @@ def _display_calendar(user_id: int) -> None:
 
     :param user_id: user id
     :type user_id: int
-    :return: None
     """
     calendar, step = DetailedTelegramCalendar().build()
     text_msg = f'*Select week by pressing on any date.\nSelect {LSTEP[step]}*'
     bot.send_message(
-        user_id, text_msg, reply_markup=calendar, parse_mode='Markdown')
+        user_id, text_msg, reply_markup=calendar, parse_mode='Markdown'
+    )
 
 
-@bot.callback_query_handler(func=DetailedTelegramCalendar.func(), state=NewsState.enter_dates)
+@bot.callback_query_handler(
+    func=DetailedTelegramCalendar.func(), state=NewsState.enter_dates
+)
 def bot_work_with_calendar(call: CallbackQuery) -> None:
     """
     Handles work with a visual calendar
 
     :param call: callback query
     :type call: CallbackQuery
-    :return: None
     """
     logger.debug('bot_work_with_calendar()')
 
@@ -122,9 +126,16 @@ def bot_work_with_calendar(call: CallbackQuery) -> None:
     chat_id, user_id = message.chat.id, call.from_user.id
     result, key, step = DetailedTelegramCalendar().process(call.data)
     if not result and key:
-        text_msg = f'*Select week by pressing on any date.\nSelect {LSTEP[step]}*'
-        bot.edit_message_text(text_msg, chat_id, message.message_id,
-                              reply_markup=key, parse_mode='Markdown')
+        text_msg = (
+            f'*Select week by pressing on any date.\nSelect {LSTEP[step]}*'
+        )
+        bot.edit_message_text(
+            text_msg,
+            chat_id,
+            message.message_id,
+            reply_markup=key,
+            parse_mode='Markdown',
+        )
     elif result:
         # date selected
         first_day = news_utils.get_first_day_of_week(result)
@@ -138,8 +149,11 @@ def bot_work_with_calendar(call: CallbackQuery) -> None:
         bot.set_state(user_id, NewsState.getting_news, chat_id)
 
         SearchHistory.add_or_update(
-            user_id=chat_id, query=search_query,
-            date_from=first_day, date_to=last_day)
+            user_id=chat_id,
+            query=search_query,
+            date_from=first_day,
+            date_to=last_day,
+        )
 
         bot.delete_message(chat_id, message.message_id)
         get_results(chat_id, user_id, search_query, first_day, last_day)

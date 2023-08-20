@@ -26,8 +26,9 @@ def exists(key: str) -> bool:
     return redis_connection.exists(key)
 
 
-def all_exist(prefixes: Iterable[str], search_query: str,
-              date_from: date, date_to: date) -> bool:
+def all_exist(
+    prefixes: Iterable[str], search_query: str, date_from: date, date_to: date
+) -> bool:
     """
     Checks if all keys with specified prefixes exist in Redis
 
@@ -42,8 +43,10 @@ def all_exist(prefixes: Iterable[str], search_query: str,
     :return: True if all keys exist, False otherwise
     :rtype: bool
     """
-    return all(exists(key_query(prefix, search_query, date_from, date_to))
-               for prefix in prefixes)
+    return all(
+        exists(key_query(prefix, search_query, date_from, date_to))
+        for prefix in prefixes
+    )
 
 
 def key(*key_parts) -> str:
@@ -58,8 +61,9 @@ def key(*key_parts) -> str:
     return ':'.join(str(part) for part in key_parts)
 
 
-def key_query(prefix: str, search_query: str, date_from: date,
-              date_to: date) -> str:
+def key_query(
+    prefix: str, search_query: str, date_from: date, date_to: date
+) -> str:
     """
     Creates key for query
 
@@ -146,7 +150,6 @@ def set(key: str, value: Any, ex: int = None) -> None:
     :type value: Any
     :param ex: TTL in seconds
     :type ex: int
-    :return: None
     """
     if isinstance(value, (dict, list)):
         value = json.dumps(value)
@@ -155,18 +158,18 @@ def set(key: str, value: Any, ex: int = None) -> None:
 
 def get_set(key: str, ttl: int, func: callable, *args, **kwargs) -> Any:
     """
-    Gets func result if cached. Or caclculates and caches it with func and its *args
+    Gets func result or its cache if cached
 
     :param key: key
     :type key: str
     :param ttl: TTL in seconds
     :type ttl: int
-    :param func: function for caclculating results if it is not cached
+    :param func: function for caclculating results
     :type func: callable
-    :param *args: func arguments
-    :type *args: Any
-    :param *kwargs: func arguments
-    :type *kwargs: Any
+    :param args: func arguments
+    :type args: Any
+    :param kwargs: func keyword arguments
+    :type kwargs: Any
     :rtype: Any
     :return: result
     """

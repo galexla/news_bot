@@ -8,7 +8,8 @@ from config_data import config
 def main(news: Iterable[dict]) -> InlineKeyboardMarkup:
     """
     Menu that displays news (for example, top news). Each menu item is
-    a button with news title. It keeps callback data in format 'news_{news_id}'.
+    a button with news title. It keeps callback data in format
+    'news_{news_id}'.
 
     :param news: list of dicts with keys: id, title
     :type news: Iterable[dict]

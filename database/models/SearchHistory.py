@@ -38,7 +38,7 @@ class SearchHistory(Model):
         indexes = (
             (('user_id', 'query', 'date_from', 'date_to'), True),
             (('user_id',), False),
-            (('entered_date',), False)
+            (('entered_date',), False),
         )
 
     @classmethod
@@ -51,15 +51,17 @@ class SearchHistory(Model):
         :return: recent search history
         :rtype: list[SearchHistory]
         """
-        return (cls
-                .select()
-                .where(cls.user_id == str(user_id))
-                .order_by(cls.entered_date.desc())
-                .limit(5))
+        return (
+            cls.select()
+            .where(cls.user_id == str(user_id))
+            .order_by(cls.entered_date.desc())
+            .limit(5)
+        )
 
     @classmethod
-    def add_or_update(cls, user_id: str | int, query: str,
-                      date_from: date, date_to: date) -> None:
+    def add_or_update(
+        cls, user_id: str | int, query: str, date_from: date, date_to: date
+    ) -> None:
         """
         Adds or updates search history item
 
@@ -71,11 +73,13 @@ class SearchHistory(Model):
         :type date_from: date
         :param date_to: date to
         :type date_to: date
-        :return: None
         """
         history_item, created = cls.get_or_create(
-            user_id=str(user_id), query=query,
-            date_from=date_from, date_to=date_to)
+            user_id=str(user_id),
+            query=query,
+            date_from=date_from,
+            date_to=date_to,
+        )
         if not created:
             history_item.entered_date = datetime.now()
             history_item.save()

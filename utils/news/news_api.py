@@ -24,7 +24,9 @@ JSON_NEWS_PATH = ['articles']
 JSON_TOTAL_COUNT_PATH = ['totalResults']
 
 
-def get_news(search_query: str, date_from: date, date_to: date) -> tuple[list[dict], int]:
+def get_news(
+    search_query: str, date_from: date, date_to: date
+) -> tuple[list[dict], int]:
     """
     Gets news using WebSearch API
 
@@ -34,36 +36,45 @@ def get_news(search_query: str, date_from: date, date_to: date) -> tuple[list[di
     :type date_from: date
     :param date_to: end date
     :type date_to: date
-    :raises ValueError: raised when search query is empty or any other parameter is invalid in subsequent calls
     :return: news
     :rtype: list[dict]
     """
     news = []
 
     n_news_total, query_time = add_first_page_of_news(
-        news, search_query, date_from, date_to, PAGE_SIZE)
+        news, search_query, date_from, date_to, PAGE_SIZE
+    )
     n_pages_total = math.ceil(n_news_total / PAGE_SIZE)
-    logger.success(f'got first page of news, count={len(news)}'
-                   f', total={n_news_total}, total_pages={n_pages_total}')
+    logger.success(
+        f'got first page of news, count={len(news)}'
+        f', total={n_news_total}, total_pages={n_pages_total}'
+    )
 
     n_queries = _get_queries_count(
-        query_time, n_pages_total, MAX_TOTAL_QUERIES_TIME, MAX_QUERIES_COUNT)
+        query_time, n_pages_total, MAX_TOTAL_QUERIES_TIME, MAX_QUERIES_COUNT
+    )
     logger.debug('planned {} more queries'.format(n_queries - 1))
 
     if n_queries > 1:
         page_numbers = _get_random_page_numbers(
-            start_chunk=1, n_pages_total=n_pages_total, n_chunks=n_queries)
+            start_chunk=1, n_pages_total=n_pages_total, n_chunks=n_queries
+        )
 
-        _add_news(news, search_query, date_from, date_to,
-                  page_numbers, PAGE_SIZE)
+        _add_news(
+            news, search_query, date_from, date_to, page_numbers, PAGE_SIZE
+        )
         logger.success(f'got rest of pages, news count={len(news)}')
 
     return news, n_news_total
 
 
-def add_first_page_of_news(news: list[dict], search_query: str,
-                           date_from: date, date_to: date,
-                           news_per_page: int) -> tuple[int, float]:
+def add_first_page_of_news(
+    news: list[dict],
+    search_query: str,
+    date_from: date,
+    date_to: date,
+    news_per_page: int,
+) -> tuple[int, float]:
     """
     Gets first page of news with API and adds it to news list
 
@@ -82,15 +93,20 @@ def add_first_page_of_news(news: list[dict], search_query: str,
     """
     start_time = datetime.now()
     n_news_total = _add_news(
-        news, search_query, date_from, date_to, [1], news_per_page)
+        news, search_query, date_from, date_to, [1], news_per_page
+    )
     query_time = (datetime.now() - start_time).total_seconds()
     query_time = max(query_time, MIN_REQUEST_INTERVAL)
 
     return n_news_total, query_time
 
 
-def _get_queries_count(query_time: float, n_pages_total: int,
-                       max_queries_time: float, max_queries_count: int) -> int:
+def _get_queries_count(
+    query_time: float,
+    n_pages_total: int,
+    max_queries_time: float,
+    max_queries_count: int,
+) -> int:
     """
     Gets total number of queries planned to be sent (first page included)
 
@@ -118,7 +134,9 @@ def _get_queries_count(query_time: float, n_pages_total: int,
     return n_queries_planned
 
 
-def _get_random_page_numbers(start_chunk: int, n_pages_total: int, n_chunks: int) -> list[int]:
+def _get_random_page_numbers(
+    start_chunk: int, n_pages_total: int, n_chunks: int
+) -> list[int]:
     """
     Generates random page number for each chunk
 
@@ -153,8 +171,14 @@ def _get_random_page_numbers(start_chunk: int, n_pages_total: int, n_chunks: int
     return page_numbers
 
 
-def _add_news(news: list[dict], search_query: str, date_from: date, date_to: date,
-              page_numbers: Iterable[int], news_per_page: int) -> int:
+def _add_news(
+    news: list[dict],
+    search_query: str,
+    date_from: date,
+    date_to: date,
+    page_numbers: Iterable[int],
+    news_per_page: int,
+) -> int:
     """
     Gets news with API and adds it to news list
 
@@ -176,7 +200,8 @@ def _add_news(news: list[dict], search_query: str, date_from: date, date_to: dat
     total_count = 0
     for i_page in page_numbers:
         page = _get_news_page(
-            search_query, i_page, news_per_page, date_from, date_to)
+            search_query, i_page, news_per_page, date_from, date_to
+        )
         news_portion = get_json_value(page, JSON_NEWS_PATH)
         total_count += int(get_json_value(page, JSON_TOTAL_COUNT_PATH))
         news.extend(news_portion if news_portion is not None else [])
@@ -190,7 +215,6 @@ def _add_id_field(news: list[dict]) -> None:
 
     :param news: news
     :type news: list[dict]
-    :return: None
     """
     for news_item in news:
         news_item[config.NEWS_ID] = uuid.uuid4().hex
@@ -198,12 +222,10 @@ def _add_id_field(news: list[dict]) -> None:
 
 def _clean_news(news: list[dict]) -> None:
     """
-    Strips html tags from text
+    Strips html tags from news and performs other cleaning
 
-    :param text: text
-    :type text: str
-    :return: text without html tags
-    :rtype: str
+    :param news: news list
+    :type news: list[dict]
     """
     keys = ['title', 'description', 'content']
     for news_item in news:
@@ -215,11 +237,17 @@ def _clean_news(news: list[dict]) -> None:
                 news_item[key] = html.unescape(news_item[key])
                 news_item[key] = re.sub(r'[ \t]+', ' ', news_item[key])
         news_item['content'] = re.sub(
-            r'\s*\[\+\d+ chars\]\s*$', '', news_item['content'])
+            r'\s*\[\+\d+ chars\]\s*$', '', news_item['content']
+        )
 
 
-def _get_news_page(search_query: str, page_number: int, page_size: int,
-                   date_from: date, date_to: date) -> list[dict]:
+def _get_news_page(
+    search_query: str,
+    page_number: int,
+    page_size: int,
+    date_from: date,
+    date_to: date,
+) -> list[dict]:
     """
     Gets a news page using WebSearch API
 
@@ -248,7 +276,8 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
 
     if not MIN_PAGE_SIZE <= page_size <= MAX_PAGE_SIZE:
         raise ValueError(
-            f'Page size must be between {MIN_PAGE_SIZE} and {MAX_PAGE_SIZE}')
+            f'Page size must be between {MIN_PAGE_SIZE} and {MAX_PAGE_SIZE}'
+        )
 
     datetime_from = date_from_to_str(date_from)
     datetime_to = date_to_to_str(date_to)
@@ -263,23 +292,34 @@ def _get_news_page(search_query: str, page_number: int, page_size: int,
         'to': datetime_to,
         'sort': 'relevancy',
         'page': page_number,
-        'pageSize': page_size
+        'pageSize': page_size,
     }
 
-    query = ApiQuery('GET', url, headers=None, body=params,
-                     interval=MIN_REQUEST_INTERVAL, timeout=60)
+    query = ApiQuery(
+        'GET',
+        url,
+        headers=None,
+        body=params,
+        interval=MIN_REQUEST_INTERVAL,
+        timeout=60,
+    )
     response = ApiQueryScheduler.execute(query)
 
-    if not response or \
-            (isinstance(response, dict) and response.get('status') != 'ok'):
+    if not response or (
+        isinstance(response, dict) and response.get('status') != 'ok'
+    ):
         if not response or not isinstance(response, dict):
             message = 'Unknown error'
         else:
             message = response.get('message')
         raise ValueError(
             'Request {q} from {from_} to {to} failed: {message}'.format(
-                q=search_query, from_=datetime_from, to=datetime_to,
-                message=message))
+                q=search_query,
+                from_=datetime_from,
+                to=datetime_to,
+                message=message,
+            )
+        )
 
     if response:
         _add_id_field(response['articles'])

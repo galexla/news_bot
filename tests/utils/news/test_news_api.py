@@ -1,26 +1,33 @@
 import os
 from datetime import date, datetime, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from tests.test_utils import load_news_from_dir
 
-with patch('database.init_db.init_db'), \
-        patch('database.init_db.create_tables'):
+with patch('database.init_db.init_db'), patch(
+    'database.init_db.create_tables'
+):
     from utils.news import news_api
     from utils.news.utils import date_from_to_str, date_to_to_str
 
 
 def mock_news_page(news, page_num, page_size):
-    news_part = news[(page_num - 1) * page_size: page_num * page_size]
-    page = {
-        'totalResults': len(news),
-        'articles': news_part
-    }
+    i_start = (page_num - 1) * page_size
+    i_end = page_num * page_size
+    news_part = news[i_start:i_end]
+    page = {'totalResults': len(news), 'articles': news_part}
     return page
 
 
-def get_news_test_data(n_pages) -> tuple[list[dict], int]:
-    """Gets news from json files in data directory and page size"""
+def get_news_test_data(n_pages: int) -> tuple[list[dict], int]:
+    """
+    Gets news from json files
+
+    :param n_pages: number of files (pages) to load from
+    :type n_pages: int
+    :return: news
+    :rtype: tuple[list[dict], int]
+    """
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
     news = load_news_from_dir(data_dir)
     page_size = len(news) // n_pages
@@ -31,9 +38,14 @@ def get_news_test_data(n_pages) -> tuple[list[dict], int]:
 @patch('utils.news.news_api._get_news_page')
 def test_get_news(mock_get_news_page):
     news, page_size = get_news_test_data(3)
-    mock_get_news_page.side_effect = lambda q, page_number, s, f, t: \
-        mock_news_page(news, page_number, page_size)
-    actual, news_total = news_api.get_news('Ecology', date(2020, 1, 1), date(2020, 1, 3))
+    mock_get_news_page.side_effect = (
+        lambda q, page_number, s, f, t: mock_news_page(
+            news, page_number, page_size
+        )
+    )
+    actual, news_total = news_api.get_news(
+        'Ecology', date(2020, 1, 1), date(2020, 1, 3)
+    )
     assert news_total == len(news)
     assert actual == news[:page_size]
 
@@ -41,12 +53,16 @@ def test_get_news(mock_get_news_page):
 @patch('utils.news.news_api._get_news_page')
 def test_add_first_page_of_news(mock_get_news_page):
     news_test_data, page_size = get_news_test_data(3)
-    mock_get_news_page.side_effect = lambda q, page_number, s, f, t: \
-        mock_news_page(news_test_data, page_number, page_size)
+    mock_get_news_page.side_effect = (
+        lambda q, page_number, s, f, t: mock_news_page(
+            news_test_data, page_number, page_size
+        )
+    )
 
     news = []
     n_news_total, query_time = news_api.add_first_page_of_news(
-        news, 'Ecology', date(2020, 1, 1), date(2020, 1, 3), 10)
+        news, 'Ecology', date(2020, 1, 1), date(2020, 1, 3), 10
+    )
 
     assert n_news_total == len(news_test_data)
     assert query_time >= news_api.MIN_REQUEST_INTERVAL
@@ -77,8 +93,12 @@ def test__get_random_page_numbers():
     assert len(actual) == 2 and 1 <= actual[0] <= 5 and 6 <= actual[1] <= 10
 
     actual = news_api._get_random_page_numbers(0, 10, 3)
-    assert len(
-        actual) == 3 and 1 <= actual[0] <= 3 and 4 <= actual[1] <= 7 and 8 <= actual[2] <= 10
+    assert (
+        len(actual) == 3
+        and 1 <= actual[0] <= 3
+        and 4 <= actual[1] <= 7
+        and 8 <= actual[2] <= 10
+    )
 
 
 @patch('utils.news.news_api._get_news_page')
@@ -95,13 +115,15 @@ def test_add_news(mock_get_json_value, mock_get_news_page):
     mock_get_json_value.side_effect = lambda json_obj, keys: json_obj[keys[0]]
 
     result = news_api._add_news(
-        news, search_query, date_from, date_to, page_numbers, news_per_page)
+        news, search_query, date_from, date_to, page_numbers, news_per_page
+    )
 
     assert len(news) == 6
     assert result == 6
     mock_get_news_page.n_calls == 3
     mock_get_news_page.assert_called_with(
-        search_query, page_numbers[-1], news_per_page, date_from, date_to)
+        search_query, page_numbers[-1], news_per_page, date_from, date_to
+    )
     mock_get_json_value.assert_called_with(mock_page, ['totalResults'])
 
 
@@ -127,28 +149,32 @@ def test__get_news_page(uuid4_mock, requests_mock):
         'to': date_to_to_str(date_to, True),
         'sort': 'relevancy',
         'page': page_number,
-        'pageSize': page_size
+        'pageSize': page_size,
     }
 
     expected_response = {
         'status': 'ok',
         'totalResults': 1,
-        'articles': [{
-            'id': '1234567890',
-            'title': 'test',
-            'description': 'test',
-            'url': 'https://test.com',
-            'datePublished': '2020-01-01T00:00:00.000Z',
-            'content': 'test'
-        }]
+        'articles': [
+            {
+                'id': '1234567890',
+                'title': 'test',
+                'description': 'test',
+                'url': 'https://test.com',
+                'datePublished': '2020-01-01T00:00:00.000Z',
+                'content': 'test',
+            }
+        ],
     }
 
     requests_mock.register_uri(
-        method, url, json=expected_response, status_code=200)
+        method, url, json=expected_response, status_code=200
+    )
 
     start_time = datetime.utcnow()
-    response = news_api._get_news_page(search_query, page_number, page_size,
-                                       date_from, date_to)
+    response = news_api._get_news_page(
+        search_query, page_number, page_size, date_from, date_to
+    )
     end_time = datetime.utcnow()
 
     assert response == expected_response
@@ -157,5 +183,6 @@ def test__get_news_page(uuid4_mock, requests_mock):
     assert requests_mock.last_request.method == method
     assert requests_mock.last_request.url.startswith(url)
     assert set(map(str.lower, request.keys())).issubset(
-        set(requests_mock.last_request.qs.keys()))
+        set(requests_mock.last_request.qs.keys())
+    )
     assert requests_mock.last_request.timeout == 60

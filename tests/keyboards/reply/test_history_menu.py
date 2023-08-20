@@ -27,6 +27,8 @@ def test_main(search_history):
     assert isinstance(result, InlineKeyboardMarkup)
     for i, item in enumerate(search_history, start=1):
         assert isinstance(result.keyboard[i - 1][0], InlineKeyboardButton)
-        assert result.keyboard[i -
-                               1][0].text == f'01.01.22 - 02.01.22 {item.query}'
+        assert (
+            result.keyboard[i - 1][0].text
+            == f'01.01.22 - 02.01.22 {item.query}'
+        )
         assert result.keyboard[i - 1][0].callback_data == f'history_{i}'

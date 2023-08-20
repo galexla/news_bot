@@ -16,7 +16,6 @@ def bot_history(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :return: None
     """
     logger.debug('bot_history()')
 
@@ -25,22 +24,28 @@ def bot_history(message: Message) -> None:
 
     items = SearchHistory.get_recent(user_id)
     if not items or len(items) == 0:
-        bot.send_message(chat_id, '*Search history is empty*',
-                         parse_mode='Markdown')
+        bot.send_message(
+            chat_id, '*Search history is empty*', parse_mode='Markdown'
+        )
     else:
         menu = history_menu.main(items)
-        bot.send_message(chat_id, '*Search history:*',
-                         reply_markup=menu, parse_mode='Markdown')
+        bot.send_message(
+            chat_id,
+            '*Search history:*',
+            reply_markup=menu,
+            parse_mode='Markdown',
+        )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('history_'), state=None)
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith('history_'), state=None
+)
 def bot_history_item(call: CallbackQuery) -> None:
     """
     Handles the history_* callback query
 
     :param call: incoming callback query
     :type call: CallbackQuery
-    :return: None
     """
     logger.debug('bot_history_item()')
 

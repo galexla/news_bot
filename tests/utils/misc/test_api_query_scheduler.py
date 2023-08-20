@@ -3,8 +3,9 @@ from unittest.mock import patch
 
 import pytest
 
-with patch('database.init_db.init_db'), \
-        patch('database.init_db.create_tables'):
+with patch('database.init_db.init_db'), patch(
+    'database.init_db.create_tables'
+):
     from utils.misc.api_query_scheduler import ApiQuery, ApiQueryScheduler
 
 
@@ -32,22 +33,76 @@ def test_ApiQuery():
     assert query.end_time == 'b'
 
 
-@pytest.mark.parametrize('method, url, headers, body, interval, timeout, status_code, expected_response', [
-    ('GET', 'http://test.com', {'content-type': 'application/json'},
-     {'key': 'value'}, 5, 10, 200, {'result': 'abc'}),
-    ('POST', 'http://test.com', {'content-type': 'application/json'},
-     {'key': 'value'}, 5, 10, 200, {'result': 'abc'}),
-    ('POST', 'http://test.com',
-     {'content-type': 'application/json'}, {'key': 'value'}, 5, 10, 201, {'result': 'abc'}),
-    ('GET', 'http://test.com',
-     {'content-type': 'application/json'}, {'key': 'value'}, 5, 10, 400, None),
-    ('POST', 'http://test.com',
-     {'content-type': 'application/json'}, {'key': 'value'}, 5, 10, 500, None),
-])
-def test_ApiQuery_execute(method, url, headers, body, interval, timeout,
-                          status_code, expected_response, requests_mock):
+@pytest.mark.parametrize(
+    'method, url, headers, body, interval, timeout, status_code, '
+    'expected_response',
+    [
+        (
+            'GET',
+            'http://test.com',
+            {'content-type': 'application/json'},
+            {'key': 'value'},
+            5,
+            10,
+            200,
+            {'result': 'abc'},
+        ),
+        (
+            'POST',
+            'http://test.com',
+            {'content-type': 'application/json'},
+            {'key': 'value'},
+            5,
+            10,
+            200,
+            {'result': 'abc'},
+        ),
+        (
+            'POST',
+            'http://test.com',
+            {'content-type': 'application/json'},
+            {'key': 'value'},
+            5,
+            10,
+            201,
+            {'result': 'abc'},
+        ),
+        (
+            'GET',
+            'http://test.com',
+            {'content-type': 'application/json'},
+            {'key': 'value'},
+            5,
+            10,
+            400,
+            None,
+        ),
+        (
+            'POST',
+            'http://test.com',
+            {'content-type': 'application/json'},
+            {'key': 'value'},
+            5,
+            10,
+            500,
+            None,
+        ),
+    ],
+)
+def test_ApiQuery_execute(
+    method,
+    url,
+    headers,
+    body,
+    interval,
+    timeout,
+    status_code,
+    expected_response,
+    requests_mock,
+):
     requests_mock.register_uri(
-        method, url, json=expected_response, status_code=status_code)
+        method, url, json=expected_response, status_code=status_code
+    )
 
     api_query = ApiQuery(method, url, headers, body, interval, timeout)
     response = api_query.execute()
@@ -60,14 +115,18 @@ def test_ApiQuery_execute(method, url, headers, body, interval, timeout,
     assert requests_mock.last_request.timeout == api_query._timeout
 
 
-@pytest.mark.parametrize('interval, from_start, time_delta, expected_result', [
-    (1,   True,  1.2, 0),
-    (1,   True,  0.8, 0.2),
-    (1.5, True,  1.2, 0.3),
-    (1.5, False, 1.2, 0.3),
-])
-def test_ApiQueryScheduler_get_sleep_time(interval, from_start, time_delta,
-                                          expected_result):
+@pytest.mark.parametrize(
+    'interval, from_start, time_delta, expected_result',
+    [
+        (1, True, 1.2, 0),
+        (1, True, 0.8, 0.2),
+        (1.5, True, 1.2, 0.3),
+        (1.5, False, 1.2, 0.3),
+    ],
+)
+def test_ApiQueryScheduler_get_sleep_time(
+    interval, from_start, time_delta, expected_result
+):
     query = ApiQuery('GET', 'url', {'a': 'b'}, {'c': 'd'}, interval, 2)
     ApiQueryScheduler.from_start = from_start
     if from_start:
@@ -87,17 +146,26 @@ def test_ApiQueryScheduler_get_sleep_time_no_start_end():
     assert ApiQueryScheduler._ApiQueryScheduler__get_sleep_time(query) == 0
 
 
-@pytest.mark.parametrize('interval, expected_result', [
-    (0.2, 0.2),
-    (0.5, 0.5),
-    (0.7, 0.7),
-])
+@pytest.mark.parametrize(
+    'interval, expected_result',
+    [
+        (0.2, 0.2),
+        (0.5, 0.5),
+        (0.7, 0.7),
+    ],
+)
 def test_ApiQueryScheduler_execute(interval, expected_result, requests_mock):
-    query = ApiQuery('GET', 'http://test.com',
-                     {'content-type': 'application/json'},
-                     {'key': 'value'}, interval, 10)
+    query = ApiQuery(
+        'GET',
+        'http://test.com',
+        {'content-type': 'application/json'},
+        {'key': 'value'},
+        interval,
+        10,
+    )
     requests_mock.register_uri(
-        query._method, query._url, json={'result': 'success'}, status_code=200)
+        query._method, query._url, json={'result': 'success'}, status_code=200
+    )
 
     start_time = datetime.utcnow()
     ApiQueryScheduler.execute(query)
@@ -110,14 +178,28 @@ def test_ApiQueryScheduler_execute(interval, expected_result, requests_mock):
 
 
 def test_ApiQueryScheduler_execute_series(requests_mock):
-    query1 = ApiQuery('GET', 'http://test.com',
-                      {'content-type': 'application/json'},
-                      {'key': 'value'}, 0.5, 10)
-    query2 = ApiQuery('GET', 'http://test.com',
-                      {'content-type': 'application/json'},
-                      {'key': 'value'}, 0.2, 10)
+    query1 = ApiQuery(
+        'GET',
+        'http://test.com',
+        {'content-type': 'application/json'},
+        {'key': 'value'},
+        0.5,
+        10,
+    )
+    query2 = ApiQuery(
+        'GET',
+        'http://test.com',
+        {'content-type': 'application/json'},
+        {'key': 'value'},
+        0.2,
+        10,
+    )
     requests_mock.register_uri(
-        query1._method, query1._url, json={'result': 'success'}, status_code=200)
+        query1._method,
+        query1._url,
+        json={'result': 'success'},
+        status_code=200,
+    )
 
     start_time = datetime.utcnow()
     ApiQueryScheduler.execute(query1)

@@ -11,10 +11,7 @@ def bot_echo(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :return: None
     """
     logger.debug('bot_echo()')
 
-    bot.reply_to(
-        message, f'Your message: {message.text}'
-    )
+    bot.reply_to(message, f'Your message: {message.text}')

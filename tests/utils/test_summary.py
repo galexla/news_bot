@@ -1,7 +1,8 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
-with patch('database.init_db.init_db'), \
-        patch('database.init_db.create_tables'):
+with patch('database.init_db.init_db'), patch(
+    'database.init_db.create_tables'
+):
     from utils.summary import get_summary, get_summary_percent
 
 
@@ -9,11 +10,14 @@ with patch('database.init_db.init_db'), \
 @patch('utils.summary.get_json_value')
 @patch('utils.summary.ApiQueryScheduler')
 @patch('utils.summary.ApiQuery')
-def test_get_summary_percent(mocked_apiquery, mocked_scheduler, mocked_json_value, mocked_config):
+def test_get_summary_percent(
+    mocked_apiquery, mocked_scheduler, mocked_json_value, mocked_config
+):
     mocked_config.RAPID_API_KEY = 'test_api_key'
     mocked_apiquery.return_value = Mock()
     mocked_scheduler.execute.return_value = {
-        'sentences': ['This is a summary.']}
+        'sentences': ['This is a summary.']
+    }
     mocked_json_value.return_value = ['This is a summary.']
 
     result = get_summary_percent('This is a test string.', 50)
@@ -21,16 +25,22 @@ def test_get_summary_percent(mocked_apiquery, mocked_scheduler, mocked_json_valu
     mocked_apiquery.assert_called_once_with(
         'POST',
         'https://text-analysis12.p.rapidapi.com/summarize-text/api/v1.1',
-        headers={'content-type': 'application/json',
-                 'X-RapidAPI-Key': 'test_api_key',
-                 'X-RapidAPI-Host': 'text-analysis12.p.rapidapi.com'},
-        body={'language': 'english', 'summary_percent': 50,
-              'text': 'This is a test string.'},
-        interval=0.005
+        headers={
+            'content-type': 'application/json',
+            'X-RapidAPI-Key': 'test_api_key',
+            'X-RapidAPI-Host': 'text-analysis12.p.rapidapi.com',
+        },
+        body={
+            'language': 'english',
+            'summary_percent': 50,
+            'text': 'This is a test string.',
+        },
+        interval=0.005,
     )
     mocked_scheduler.execute.assert_called_once()
     mocked_json_value.assert_called_once_with(
-        {'sentences': ['This is a summary.']}, ['sentences'])
+        {'sentences': ['This is a summary.']}, ['sentences']
+    )
 
     assert result == ['This is a summary.']
 

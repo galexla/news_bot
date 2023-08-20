@@ -5,8 +5,9 @@ from telebot.types import Chat, Message, User
 
 from config_data.config import DEFAULT_COMMANDS
 
-with patch('database.init_db.init_db'), \
-        patch('database.init_db.create_tables'):
+with patch('database.init_db.init_db'), patch(
+    'database.init_db.create_tables'
+):
     from handlers.default_handlers import help
 
 
@@ -23,4 +24,8 @@ def test_bot_click_news_item_error(mock_bot, message):
     help.bot_help(message)
 
     mock_bot.reply_to.assert_called_once_with(
-        message, '\n'.join([f'/{command} - {desk}' for command, desk in DEFAULT_COMMANDS]))
+        message,
+        '\n'.join(
+            [f'/{command} - {desk}' for command, desk in DEFAULT_COMMANDS]
+        ),
+    )

@@ -13,9 +13,9 @@ def get_summary_input(news: Iterable[dict], text_key: str) -> str:
     Gets text for summary
 
     :param news: news
-    :type news: list[dict]
-    :param key: field to get text from
-    :type key: str
+    :type news: Iterable[dict]
+    :param text_key: field to get text from
+    :type text_key: str
     :return: text for summary
     :rtype: str
     """
@@ -24,7 +24,8 @@ def get_summary_input(news: Iterable[dict], text_key: str) -> str:
     news_count = round(SUMMARY_MAX_INPUT / average_length)
     news_count = min(news_count, len(news), MAX_NEWS_COUNT)
     text_for_summary = _join_news(
-        news[:news_count], text_key, 2.5 * average_length)
+        news[:news_count], text_key, 2.5 * average_length
+    )
 
     return text_for_summary
 
@@ -115,8 +116,9 @@ def _clean_news_text(text: str) -> str:
     return text
 
 
-def _join_news(news: list[dict], key: str,
-               max_item_length: int, sep: str = '\n\n') -> str:
+def _join_news(
+    news: list[dict], key: str, max_item_length: int, sep: str = '\n\n'
+) -> str:
     """
     Joins news text
 
@@ -124,6 +126,10 @@ def _join_news(news: list[dict], key: str,
     :type news: list[dict]
     :param key: field to get text from
     :type key: str
+    :param max_item_length: longer cleaned news texts are skipped
+    :type max_item_length: int
+    :param sep: a separator to join news
+    :type sep: str
     :return: joined news
     :rtype: str
     """

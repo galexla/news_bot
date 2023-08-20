@@ -3,8 +3,9 @@ from unittest.mock import patch
 import pytest
 from telebot.types import Chat, Message, User
 
-with patch('database.init_db.init_db'), \
-        patch('database.init_db.create_tables'):
+with patch('database.init_db.init_db'), patch(
+    'database.init_db.create_tables'
+):
     from handlers.default_handlers import echo
 
 
@@ -22,5 +23,4 @@ def test_bot_click_news_item_error(mock_bot, message):
 
     mock_bot.reply_to.assert_called_once()
     assert mock_bot.reply_to.call_args[0][0] == message
-    assert mock_bot.reply_to.call_args[0][1].startswith(
-        'Your message: ')
+    assert mock_bot.reply_to.call_args[0][1].startswith('Your message: ')

@@ -12,7 +12,6 @@ def bot_help(message: Message) -> None:
 
     :param message: incoming message
     :type message: Message
-    :return: None
     """
     logger.debug('bot_help()')
 

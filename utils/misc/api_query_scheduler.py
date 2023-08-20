@@ -20,8 +20,8 @@ class ApiQuery:
 
     Attributes:
         interval (float): interval between queries in seconds
-        start_time (datetime or None): query start time, None until request is made
-        end_time (datetime or None): query end time, None until request is made
+        start_time (datetime|None): start time, None before request
+        end_time (datetime|None): end time, None before request
         _method (str): method type (POST or GET)
         _url (str): API url
         _headers (dict): request headers
@@ -32,8 +32,15 @@ class ApiQuery:
         ValueError: if method is not POST or GET
     """
 
-    def __init__(self, method: str, url: str, headers: dict, body: dict,
-                 interval: float, timeout: int = 10):
+    def __init__(
+        self,
+        method: str,
+        url: str,
+        headers: dict,
+        body: dict,
+        interval: float,
+        timeout: int = 10,
+    ):
         """
         Constructor method
 
@@ -50,7 +57,6 @@ class ApiQuery:
         :param timeout: request timeout, defaults to 10
         :type timeout: int
         :raises ValueError: if method is not POST or GET
-        :return: None
         """
         self._method = method.upper()
         if self._method not in ('POST', 'GET'):
@@ -90,7 +96,6 @@ class ApiQuery:
 
         :param value: value
         :type value: datetime
-        :return: None
         """
         self._start_time = value
 
@@ -111,7 +116,6 @@ class ApiQuery:
 
         :param value: value
         :type value: datetime
-        :return: None
         """
         self._end_time = value
 
@@ -127,23 +131,35 @@ class ApiQuery:
         try:
             if self._method == 'POST':
                 response = requests.request(
-                    self._method, self._url, json=self._body,
-                    headers=self._headers, timeout=self._timeout)
+                    self._method,
+                    self._url,
+                    json=self._body,
+                    headers=self._headers,
+                    timeout=self._timeout,
+                )
             else:
                 response = requests.request(
-                    self._method, self._url, headers=self._headers,
-                    params=self._body, timeout=self._timeout)
+                    self._method,
+                    self._url,
+                    headers=self._headers,
+                    params=self._body,
+                    timeout=self._timeout,
+                )
 
             if 200 <= response.status_code < 300:
-                logger.success('Got answer({}) from {} , answer={}'.format(
-                    len(response.text), self._url, response.text[:100]))
+                logger.success(
+                    'Got answer({}) from {} , answer={}'.format(
+                        len(response.text), self._url, response.text[:100]
+                    )
+                )
                 try:
                     return response.json()
                 except requests.exceptions.JSONDecodeError:
                     logger.error('JSON decoding failed')
             else:
                 logger.error(
-                    f'Request failed. Got status code {response.status_code}')
+                    f'Request failed. Got status code {response.status_code}'
+                )
         except requests.RequestException as exc:
             try:
                 msg = ', '.join(map(str, exc.args))
@@ -159,7 +175,7 @@ class ApiQueryScheduler:
     API query scheduler
 
     Attributes:
-        from_start (bool): whether to calculate time from a query start or from its end
+        from_start (bool): calculate query time from its start or its end?
     """
 
     from_start: bool = True

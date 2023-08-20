@@ -1,8 +1,9 @@
 from datetime import date
 from unittest.mock import patch
 
-with patch('database.init_db.init_db'), \
-        patch('database.init_db.create_tables'):
+with patch('database.init_db.init_db'), patch(
+    'database.init_db.create_tables'
+):
     from utils.news import utils as news_utils
 
 
@@ -121,8 +122,8 @@ def test_important_news_to_texts() -> None:
                 'source': 'source2',
                 'tags': 'tags2',
                 'important': 'important2',
-            }
-        }
+            },
+        },
     }
     text_keys = ['title', 'text']
     assert news_utils.important_news_to_texts(news, text_keys) == {

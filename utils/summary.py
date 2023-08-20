@@ -45,17 +45,18 @@ def get_summary_percent(text: str, percent: float) -> Optional[list]:
     headers = {
         'content-type': 'application/json',
         'X-RapidAPI-Key': config.RAPID_API_KEY,
-        'X-RapidAPI-Host': 'text-analysis12.p.rapidapi.com'
+        'X-RapidAPI-Host': 'text-analysis12.p.rapidapi.com',
     }
 
-    request = {
-        'language': 'english',
-        'summary_percent': percent,
-        'text': text
-    }
+    request = {'language': 'english', 'summary_percent': percent, 'text': text}
 
-    query = ApiQuery('POST', url, headers=headers,
-                     body=request, interval=MIN_REQUEST_INTERVAL)
+    query = ApiQuery(
+        'POST',
+        url,
+        headers=headers,
+        body=request,
+        interval=MIN_REQUEST_INTERVAL,
+    )
     response = ApiQueryScheduler.execute(query)
     sentences = get_json_value(response, ['sentences'])
 

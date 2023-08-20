@@ -1,7 +1,9 @@
 from typing import Iterable, Optional
 
 
-def get_json_value(json_obj: Optional[dict | list], keys: Iterable | str | int) -> any:
+def get_json_value(
+    json_obj: Optional[dict | list], keys: Iterable | str | int
+) -> any:
     """
     Gets a deep value from the JSON object using a chains of keys
 

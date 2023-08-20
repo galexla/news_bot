@@ -8,11 +8,15 @@ from utils.news.important_news import get_important_news
 from utils.news.summary_input import get_summary_input
 
 IMPORTANT_NEWS_KEYS = (
-    config.NEWS_TITLE, config.NEWS_DESCRIPTION, config.NEWS_BODY)
+    config.NEWS_TITLE,
+    config.NEWS_DESCRIPTION,
+    config.NEWS_BODY,
+)
 
 
-def get_news_semimanufactures(search_query: str, date_from: date,
-                              date_to: date) -> Tuple[int, str, dict[dict]]:
+def get_news_semimanufactures(
+    search_query: str, date_from: date, date_to: date
+) -> Tuple[int, str, dict[dict]]:
     """
     Loads news from API and calculates news count, summary input
     and new ordered by importance and caches them to Redis.
@@ -32,24 +36,33 @@ def get_news_semimanufactures(search_query: str, date_from: date,
     news = None
     if not cache.all_exist(KEY_PREFIXES, search_query, date_from, date_to):
         news, n_news_total = news_api.get_news(
-            search_query, date_from, date_to)
+            search_query, date_from, date_to
+        )
 
         cache.set(
             cache.key_query('news_count', search_query, date_from, date_to),
             n_news_total,
-            cache.calc_ttl(date_to))
+            cache.calc_ttl(date_to),
+        )
 
-        important_news = get_important_news(search_query, news, IMPORTANT_NEWS_KEYS)
+        important_news = get_important_news(
+            search_query, news, IMPORTANT_NEWS_KEYS
+        )
         cache.set(
-            cache.key_query('important_news', search_query, date_from, date_to),
+            cache.key_query(
+                'important_news', search_query, date_from, date_to
+            ),
             important_news,
-            cache.calc_ttl(date_to))
+            cache.calc_ttl(date_to),
+        )
     else:
         n_news_total = cache.get(
-            cache.key_query('news_count', search_query, date_from, date_to))
+            cache.key_query('news_count', search_query, date_from, date_to)
+        )
 
         important_news = cache.get(
-            cache.key_query('important_news', search_query, date_from, date_to))
+            cache.key_query('important_news', search_query, date_from, date_to)
+        )
 
     if n_news_total == 0:
         return 0, '', {}
@@ -60,7 +73,8 @@ def get_news_semimanufactures(search_query: str, date_from: date,
     else:
         news_for_summary = important_news_to_iterator(important_news)
         summary_input = get_summary_input(
-            news_for_summary, config.NEWS_DESCRIPTION)
+            news_for_summary, config.NEWS_DESCRIPTION
+        )
         cache.set(key, summary_input, cache.calc_ttl(date_to))
 
     return n_news_total, summary_input, important_news

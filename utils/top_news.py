@@ -7,14 +7,15 @@ from utils.misc import redis_cache as cache
 TEXT_KEYS = (config.NEWS_TITLE, config.NEWS_BODY)
 
 
-def get_top_news(sentences: list[str], important_news: dict[dict],
-                 n_max: int = 5) -> list[dict]:
+def get_top_news(
+    sentences: list[str], important_news: dict[dict], n_max: int = 5
+) -> list[dict]:
     """
     Tries to get top 5 news
 
     :param sentences: sentences
     :type sentences: list[str]
-    :param important_news: news in format {id: {importance: float, news: dict}, ...}
+    :param important_news: news: {id: {importance: float, news: dict}, ...}
     :type important_news: dict[dict]
     :param n_max: max number of news to return
     :type n_max: int
@@ -40,7 +41,6 @@ def cache_top_news_items(top_news: list[dict], date_to: date) -> None:
     :type top_news: list[dict]
     :param date_to: end date of a news search query to calculate cache ttl
     :type date_to: date
-    :return: None
     """
     for news_item in top_news:
         key = cache.key('top_news_item', news_item[config.NEWS_ID])

@@ -27,8 +27,9 @@ def get_last_day_of_week(date: date) -> date:
     return date + timedelta(days=6 - date.weekday())
 
 
-def news_to_texts(news: list[dict], text_keys: Iterable[str],
-                  separator: str = '\n\n') -> Iterator[str]:
+def news_to_texts(
+    news: list[dict], text_keys: Iterable[str], separator: str = '\n\n'
+) -> Iterator[str]:
     """
     Converts news to iterator of texts
 
@@ -46,8 +47,9 @@ def news_to_texts(news: list[dict], text_keys: Iterable[str],
         yield text
 
 
-def to_text(news_item: dict, text_keys: Iterable[str],
-            separator: str = '\n\n') -> str:
+def to_text(
+    news_item: dict, text_keys: Iterable[str], separator: str = '\n\n'
+) -> str:
     """
     Joins all text_keys contents to text
 
@@ -63,12 +65,13 @@ def to_text(news_item: dict, text_keys: Iterable[str],
     return separator.join(news_item.get(key, '') for key in text_keys)
 
 
-def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
-                            separator: str = '\n\n') -> dict[str, str]:
+def important_news_to_texts(
+    news: dict[dict], text_keys: Iterable[str], separator: str = '\n\n'
+) -> dict[str, str]:
     """
     Converts important news to iterator of texts
 
-    :param news: news in format {news_id: {'importance': bool, 'news': dict}, ...}
+    :param news: news: {news_id: {'importance': bool, 'news': dict}, ...}
     :type news: dict[dict]
     :param text_keys: keys to get text from
     :type text_keys: Iterable[str]
@@ -89,7 +92,7 @@ def important_news_to_texts(news: dict[dict], text_keys: Iterable[str],
 @functools.lru_cache(maxsize=128)
 def date_from_to_str(date_from: date, addT: bool = True) -> str:
     """
-    Converts 'from' date to string in format '%Y-%m-%dT00:00:00' or '%Y-%m-%d 00:00:00'
+    Formats 'from' date into '%Y-%m-%dT00:00:00' or '%Y-%m-%d 00:00:00'
 
     :param date_from: date
     :type date_from: date
@@ -105,7 +108,7 @@ def date_from_to_str(date_from: date, addT: bool = True) -> str:
 @functools.lru_cache(maxsize=128)
 def date_to_to_str(date_to: date, addT: bool = True) -> str:
     """
-    Converts 'to' date to string in format '%Y-%m-%dT23:59:59' or '%Y-%m-%d 23:59:59'
+    Formats 'to' date into '%Y-%m-%dT23:59:59' or '%Y-%m-%d 23:59:59'
 
     :param date_to: date
     :type date_to: date

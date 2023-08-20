@@ -1,5 +1,6 @@
 import logging
 import os
+
 from dotenv import find_dotenv, load_dotenv
 
 if not find_dotenv():
@@ -31,8 +32,11 @@ LOG_LEVEL_APP = LOG_LEVEL_APP if LOG_LEVEL_APP in loguru_levels else 'INFO'
 
 logging_levels = set('NOTSET DEBUG INFO WARNING ERROR CRITICAL'.split())
 LOG_LEVEL_BOT = os.getenv('LOG_LEVEL_BOT', 'INFO').upper()
-LOG_LEVEL_BOT = getattr(
-    logging, LOG_LEVEL_BOT) if LOG_LEVEL_BOT in logging_levels else logging.INFO
+LOG_LEVEL_BOT = (
+    getattr(logging, LOG_LEVEL_BOT)
+    if LOG_LEVEL_BOT in logging_levels
+    else logging.INFO
+)
 
 
 NEWS_ID = 'id'
